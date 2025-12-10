@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Secret Santa – Uczestnik</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; max-width: 500px; }
+    .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+    #result { font-weight: bold; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Secret Santa – Uczestnik</h1>
+
+  <div class="box">
+    <p id="info"></p>
+    <p id="result"></p>
+  </div>
+
+<script>
+const RESULTS_URL = 'results.json';
+let DATA = null;
+
+function getQueryParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
+async function loadResults() {
+  const resultEl = document.getElementById('result');
+  try {
+    const response = await fetch(RESULTS_URL, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('Nie udało się wczytać results.json');
+    }
+    DATA = await response.json();
+    showResult();
+  } catch (err) {
+    console.error(err);
+    resultEl.textContent = 'Błąd: nie udało się wczytać wyników. Skontaktuj się z organizatorem.';
+  }
+}
+
+function showResult() {
+  const infoEl = document.getElementById('info');
+  const resultEl = document.getElementById('result');
+
+  const name = getQueryParam('name');
+  const token = getQueryParam('token');
+
+  if (!name || !token) {
+    infoEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
+    return;
+  }
+
+  infoEl.textContent = `Cześć, ${name}!`;
+
+  if (!DATA) {
+    resultEl.textContent = 'Brak danych losowania.';
+    return;
+  }
+
+  const entry = DATA[name];
+  if (!entry) {
+    resultEl.textContent = 'Nie znaleziono Twojego imienia w wynikach. Sprawdź, czy masz właściwy link.';
+    return;
+  }
+
+  if (entry.token !== token) {
+    resultEl.textContent = 'Link jest nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
+    return;
+  }
+
+  resultEl.textContent = 'Kupujesz prezent dla: ' + entry.receiver;
+}
+
+loadResults();
+</script>
+</body>
+</html>
