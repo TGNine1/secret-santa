@@ -69,12 +69,13 @@ Tomasz: Ania</textarea>
 
 <script>
 function parsePeople(text) {
-  return text.split('\\n').map(x => x.trim()).filter(x => x.length > 0);
-  console.log('People parsed:', people);
+  // split on real newlines, not "\n" literal
+  return text.split('\n').map(x => x.trim()).filter(x => x.length > 0);
 }
+
 function parseConstraints(text) {
   const constraints = {};
-  const lines = text.split('\\n');
+  const lines = text.split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
@@ -86,6 +87,7 @@ function parseConstraints(text) {
   }
   return constraints;
 }
+
 function shuffle(array) {
   const arr = array.slice();
   for (let i = arr.length - 1; i > 0; i--) {
@@ -94,6 +96,7 @@ function shuffle(array) {
   }
   return arr;
 }
+
 function drawSecretSanta(people, constraints, maxTries = 10000) {
   const fullConstraints = {};
   for (const p of people) {
@@ -117,6 +120,7 @@ function drawSecretSanta(people, constraints, maxTries = 10000) {
   }
   return null;
 }
+
 function generateToken(length = 12) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
   let token = '';
@@ -131,6 +135,8 @@ document.getElementById('generateBtn').addEventListener('click', () => {
   const constraintsText = document.getElementById('constraints').value;
   const baseUrl = document.getElementById('baseUrl').value.trim();
   const people = parsePeople(peopleText);
+
+  console.log('People parsed:', people);
 
   const linksOutput = document.getElementById('linksOutput');
   const jsonOutput = document.getElementById('jsonOutput');
