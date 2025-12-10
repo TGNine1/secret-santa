@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Secret Santa – Organizator (linki osobiste)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
+    textarea { width: 100%; box-sizing: border-box; }
+    .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    button { margin-top: 10px; padding: 6px 12px; }
+    pre { background: #f5f5f5; padding: 10px; white-space: pre-wrap; }
+    .small { font-size: 0.9em; color: #555; }
+    code { background: #eee; padding: 2px 4px; }
+  </style>
+</head>
+<body>
+  <h1>Secret Santa – Organizator (linki osobiste)</h1>
+
+  <div class="box">
+    <p>Ta strona losuje pary z wykluczeniami i generuje <b>osobiste linki</b> dla uczestników.</p>
+    <p class="small">
+      1. Wpisz listę osób i wykluczenia.<br>
+      2. Wpisz <b>bazowy adres strony uczestnika</b> (np. <code>https://tgnine1.github.io/secret-santa/participant.html</code>).<br>
+      3. Kliknij „Losuj i wygeneruj linki”.<br>
+      4. Skopiuj <code>results.json</code> i wgraj go do repozytorium.<br>
+      5. Wyślij każdemu jego link.
+    </p>
+  </div>
+
+  <div class="box">
+    <h2>Krok 1: uczestnicy i wykluczenia</h2>
+
+    <label>Lista osób (po jednej w linii):</label>
+    <textarea id="people" rows="8">Anetka
+Ania
+Danusia
+Dariusz
+Magda
+Marta
+Paulina
+Tomasz</textarea>
+
+    <label>Wykluczenia (np. "Ania: Tomasz" i "Tomasz: Ania"):</label>
+    <textarea id="constraints" rows="4">Ania: Tomasz
+Tomasz: Ania</textarea>
+
+    <label>Adres strony uczestnika (participant.html):</label>
+    <input id="baseUrl" style="width:100%;" value="https://tgnine1.github.io/secret-santa/participant.html" />
+
+    <button id="generateBtn">Losuj i wygeneruj linki</button>
+  </div>
+
+  <div class="box">
+    <h2>Krok 2: linki dla uczestników</h2>
+    <p class="small">
+      Skopiuj tę listę i wyślij każdemu <b>tylko jego link</b> (np. SMS-em, mailem, na Messengerze).
+    </p>
+    <pre id="linksOutput"></pre>
+  </div>
+
+  <div class="box">
+    <h2>Krok 3: plik results.json</h2>
+    <p class="small">
+      Skopiuj poniższy JSON i wklej go jako plik <code>results.json</code> w repozytorium GitHub (obok participant.html).
+    </p>
+    <pre id="jsonOutput"></pre>
+  </div>
+
+<script>
+function parsePeople(text) {
+  return text.split('\\n').map(x => x.trim()).filter(x => x.length > 0);
+}
+function parseConstraints(text) {
+  const constraints = {};
+  const lines = text.split('\\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const parts = trimmed.split(':');
+    if (parts.length < 2) continue;
+    const person = parts[0].trim();
+    const excluded = parts[1].split(',').map(x => x.trim()).filter(x => x.length > 0);
+    constraints[person] = excluded.concat(person); // dodaj też "sam siebie"
+  }
+  return constraints;
+}
+function shuffle(array) {
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function drawSecretSanta(people, constraints, maxTries = 10000) {
+  const fullConstraints = {};
+  for (const p of people) {
+    const base = constraints[p] ? constraints[p].slice() : [];
+    if (!base.includes(p)) base.push(p);
+    fullConstraints[p] = base;
+  }
+  for (let t = 0; t < maxTries; t++) {
+    const receivers = shuffle(people);
+    const assignment = {};
+    let ok = true;
+    for (let i = 0; i < people.length; i++) {
+      const giver = people[i];
+      const receiver = receivers[i];
+      if (giver === receiver) { ok = false; break; }
+      const excluded = fullConstraints[giver] || [giver];
+      if (excluded.includes(receiver)) { ok = false; break; }
+      assignment[giver] = receiver;
+    }
+    if (ok) return assignment;
+  }
+  return null;
+}
+function generateToken(length = 12) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < length; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+document.getElementById('generateBtn').addEventListener('click', () => {
+  const peopleText = document.getElementById('people').value;
+  const constraintsText = document.getElementById('constraints').value;
+  const baseUrl = document.getElementById('baseUrl').value.trim();
+  const people = parsePeople(peopleText);
+
+  const linksOutput = document.getElementById('linksOutput');
+  const jsonOutput = document.getElementById('jsonOutput');
+
+  linksOutput.textContent = '';
+  jsonOutput.textContent = '';
+
+  if (!baseUrl) {
+    linksOutput.textContent = 'Podaj adres strony uczestnika (participant.html).';
+    return;
+  }
+  if (people.length < 2) {
+    linksOutput.textContent = 'Potrzeba co najmniej 2 osób.';
+    return;
+  }
+
+  const constraints = parseConstraints(constraintsText);
+  const assignment = drawSecretSanta(people, constraints);
+
+  if (!assignment) {
+    linksOutput.textContent = 'Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.';
+    return;
+  }
+
+  const data = {};
+  let linksText = 'Linki dla uczestników:\n\n';
+
+  for (const p of people) {
+    const receiver = assignment[p];
+    const token = generateToken();
+    data[p] = { token, receiver };
+
+    const url = new URL(baseUrl);
+    url.searchParams.set('name', p);
+    url.searchParams.set('token', token);
+
+    linksText += `${p}: ${url.toString()}\n`;
+  }
+
+  linksOutput.textContent = linksText;
+  jsonOutput.textContent = JSON.stringify(data, null, 2);
+});
+</script>
+</body>
+</html>
