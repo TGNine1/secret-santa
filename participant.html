@@ -2,21 +2,89 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Secret Santa – Uczestnik (Supabase)</title>
+  <title>🎄 Secret Santa – Uczestnik 🎁</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; max-width: 500px; }
-    .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
-    #result { font-weight: bold; margin-top: 15px; }
-    .small { font-size: 0.9em; color: #555; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #ffeedd, #f8f3ea);
+      color: #222;
+    }
+    main {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      border: 1px solid rgba(139,0,0,0.15);
+      padding: 24px 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
+    }
+    h1 span.emoji {
+      font-size: 26px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #555;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    #info {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    #result {
+      font-size: 18px;
+      font-weight: 600;
+      color: #8b0000;
+      margin-top: 8px;
+    }
+    .error {
+      color: #b22222;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .small {
+      font-size: 12px;
+      color: #777;
+      margin-top: 18px;
+    }
   </style>
 </head>
 <body>
-  <h1>Secret Santa – Uczestnik</h1>
+  <main>
+    <div class="card">
+      <h1>
+        <span class="emoji">🎄</span>
+        Secret Santa
+        <span class="emoji">🎁</span>
+      </h1>
+      <p class="subtitle">
+        Otworzyłeś osobisty link do losowania prezentów. Sprawdź, komu kupujesz prezent!
+      </p>
 
-  <div class="box">
-    <p id="info" class="small"></p>
-    <p id="result"></p>
-  </div>
+      <p id="info"></p>
+      <p id="result"></p>
+      <p id="error" class="error"></p>
+
+      <p class="small">
+        Jeśli coś wygląda nie tak (np. błąd lub puste dane), skontaktuj się z organizatorem losowania.
+      </p>
+    </div>
+  </main>
 
   <!-- Supabase JS client -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -36,13 +104,18 @@ function getQueryParam(name) {
 async function showResult() {
   const infoEl = document.getElementById('info');
   const resultEl = document.getElementById('result');
+  const errorEl = document.getElementById('error');
+
+  errorEl.textContent = '';
+  resultEl.textContent = '';
+  infoEl.textContent = '';
 
   const drawId = getQueryParam('drawId');
   const name = getQueryParam('name');
   const token = getQueryParam('token');
 
   if (!drawId || !name || !token) {
-    infoEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
+    errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
     return;
   }
 
@@ -59,25 +132,25 @@ async function showResult() {
 
     if (error) {
       console.error(error);
-      resultEl.textContent = 'Błąd podczas wczytywania wyniku. Skontaktuj się z organizatorem.';
+      errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
       return;
     }
 
     if (!data) {
-      resultEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
+      errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
       return;
     }
 
     if (data.token !== token) {
-      resultEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
+      errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
       return;
     }
 
-    resultEl.textContent = 'Kupujesz prezent dla: ' + data.receiver;
+    resultEl.textContent = 'Kupujesz prezent dla: ' + data.receiver + ' 🎁' + 'Wesołych Świąt!';
 
   } catch (e) {
     console.error(e);
-    resultEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+    errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
   }
 }
 
