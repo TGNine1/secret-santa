@@ -2,76 +2,219 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Secret Santa – Organizator (Supabase)</title>
+  <title>🎄 Secret Santa – Organizator 🎁</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
-    textarea { width: 100%; box-sizing: border-box; }
-    .box { border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    button { margin-top: 10px; padding: 6px 12px; }
-    pre { background: #f5f5f5; padding: 10px; white-space: pre-wrap; }
-    .small { font-size: 0.9em; color: #555; }
-    code { background: #eee; padding: 2px 4px; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f5f0e6, #f8f3ea);
+      color: #222;
+    }
+    header {
+      background: linear-gradient(90deg, #8b0000, #b22222);
+      color: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    header h1 span.emoji {
+      font-size: 26px;
+    }
+    header p {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    main {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 16px 24px;
+    }
+    .box {
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .box h2 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      color: #8b0000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .box h2 span.emoji {
+      font-size: 18px;
+    }
+    .small {
+      font-size: 13px;
+      color: #555;
+      margin-top: 4px;
+      margin-bottom: 0;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #0f8b0f, #1fa21f);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.2s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+      background: linear-gradient(135deg, #0c740c, #1b8a1b);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+    .status {
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+    .status.ok {
+      color: #0f7a0f;
+    }
+    .status.err {
+      color: #ffd5d5;
+    }
+    #linksOutput {
+      font-size: 13px;
+    }
+    .link-row {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #e0d2ba;
+    }
+    .link-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    .link-row-name {
+      font-weight: 600;
+    }
+    .link-row-url {
+      font-size: 13px;
+      word-break: break-all;
+      background: #f7f2ea;
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+    .copy-btn {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: none;
+      background: #0f8b0f;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .copy-btn:hover {
+      background: #0c740c;
+    }
+    .copy-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 0 1px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
-  <h1>Secret Santa – Organizator (Supabase)</h1>
+  <header>
+    <h1>
+      <span class="emoji">🎄</span>
+      Secret Santa – Organizator
+      <span class="emoji">🎁</span>
+    </h1>
+    <p>Losowanie z wykluczeniami i osobistymi linkami dla uczestników.</p>
+  </header>
 
-  <div class="box">
-    <p>Ta strona losuje pary z wykluczeniami, zapisuje wynik w Supabase i generuje <b>osobiste linki</b>.</p>
-    <p class="small">
-      1. Wpisz nazwę losowania (np. <code>rodzinaA-2024</code>).<br>
-      2. Wpisz listę osób i wykluczenia.<br>
-      3. Kliknij „Losuj i zapisz w Supabase”.<br>
-      4. Skopiuj linki i wyślij je uczestnikom.<br>
-      5. Uczestnicy wchodzą w swoje linki na stronie <code>participant.html</code>.
-    </p>
-  </div>
+  <main>
+    <div class="box">
+      <h2><span class="emoji">🧩</span>Krok 1: konfiguracja losowania</h2>
+      <p class="small">
+        Wpisz nazwę losowania (np. <code>rodzinaA-2024</code>), uczestników oraz wykluczenia.
+        Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁
+      </p>
 
-  <div class="box">
-    <h2>Krok 1: konfiguracja losowania</h2>
+      <label>Nazwa losowania (np. rodzinaA-2024):</label>
+      <input type="text" id="drawSlug" placeholder="np. rodzinaA-2024">
 
-    <label>Nazwa losowania (unikalny slug, np. rodzinaA-2024):</label>
-    <input id="drawSlug" style="width:100%;" value="rodzinaA-2024" />
+      <label>Lista osób (po jednej w linii):</label>
+      <textarea id="people" rows="8" placeholder="Wpisz imiona, po jednym w linii"></textarea>
 
-    <label>Lista osób (po jednej w linii):</label>
-    <textarea id="people" rows="8">Anetka
-Ania
-Danusia
-Dariusz
-Magda
-Marta
-Paulina
-Tomasz</textarea>
+      <label>Wykluczenia (np. Ania: Tomasz i Tomasz: Ania):</label>
+      <textarea id="constraints" rows="4" placeholder="Ania: Tomasz&#10;Tomasz: Ania"></textarea>
 
-    <label>Wykluczenia (np. "Ania: Tomasz" i "Tomasz: Ania"):</label>
-    <textarea id="constraints" rows="4">Ania: Tomasz
-Tomasz: Ania</textarea>
+      <label>Adres strony uczestnika (participant.html):</label>
+      <input type="text" id="baseUrl" value="https://tgnine1.github.io/secret-santa/participant.html">
 
-    <label>Adres strony uczestnika (participant.html):</label>
-    <input id="baseUrl" style="width:100%;" value="https://tgnine1.github.io/secret-santa/participant.html" />
+      <button id="generateBtn" onclick="generateAndSave()">🎅 Losuj </button>
 
-    <button onclick="generateAndSave()">Losuj i zapisz w Supabase</button>
+      <p id="status" class="status"></p>
+    </div>
 
-    <p id="status" class="small"></p>
-  </div>
-
-  <div class="box">
-    <h2>Krok 2: linki dla uczestników</h2>
-    <p class="small">
-      Skopiuj tę listę i wyślij każdemu <b>tylko jego link</b> (np. SMS-em, mailem, na Messengerze).
-    </p>
-    <pre id="linksOutput"></pre>
-  </div>
-
-  <div class="box">
-    <h2>Krok 3: podsumowanie techniczne</h2>
-    <p class="small">
-      To losowanie zostało zapisane w Supabase w tabelach <code>draws</code> i <code>assignments</code>.<br>
-      Nie musisz już niczego kopiować jako pliki JSON.
-    </p>
-    <pre id="debugOutput"></pre>
-  </div>
+    <div class="box">
+      <h2><span class="emoji">📨</span>Krok 2: linki dla uczestników</h2>
+      <p class="small">
+        Skopiuj tę listę i wyślij każdemu <b>tylko jego link</b> (np. SMS-em, mailem albo na Messengerze).
+        Każdy link to indywidualna świąteczna niespodzianka 🎁
+      </p>
+      <div id="linksOutput"></div>
+    </div>
+  </main>
 
   <!-- Supabase JS client (z CDN) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -83,7 +226,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// === LOGIKA LOSOWANIA (jak wcześniej) ===
+// === LOGIKA LOSOWANIA ===
 function parsePeople(text) {
   return text.split('\n').map(x => x.trim()).filter(x => x.length > 0);
 }
@@ -103,16 +246,6 @@ function parseConstraints(text) {
   return constraints;
 }
 
-function shuffle(array) {
-  const arr = array.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[j]]; // błąd, poprawimy poniżej
-  }
-  return arr;
-}
-
-// poprawnna wersja shuffle (zamieniamy w dwóch miejscach)
 function shuffleFixed(array) {
   const arr = array.slice();
   for (let i = arr.length - 1; i > 0; i--) {
@@ -155,15 +288,16 @@ function generateToken(length = 12) {
   return token;
 }
 
-// === GŁÓWNA FUNKCJA ORGANIZATORA ===
+// === GŁÓWNA FUNKCJA ===
 async function generateAndSave() {
   const statusEl = document.getElementById('status');
   const linksOutput = document.getElementById('linksOutput');
-  const debugOutput = document.getElementById('debugOutput');
+  const btn = document.getElementById('generateBtn');
 
   statusEl.textContent = '';
-  linksOutput.textContent = '';
-  debugOutput.textContent = '';
+  statusEl.className = 'status';
+  linksOutput.innerHTML = '';
+  btn.disabled = true;
 
   const drawSlug = document.getElementById('drawSlug').value.trim();
   const peopleText = document.getElementById('people').value;
@@ -172,31 +306,39 @@ async function generateAndSave() {
 
   if (!drawSlug) {
     statusEl.textContent = 'Podaj nazwę losowania (slug).';
+    statusEl.classList.add('err');
+    btn.disabled = false;
     return;
   }
   if (!baseUrl) {
     statusEl.textContent = 'Podaj adres strony uczestnika (participant.html).';
+    statusEl.classList.add('err');
+    btn.disabled = false;
     return;
   }
 
   const people = parsePeople(peopleText);
   if (people.length < 2) {
     statusEl.textContent = 'Potrzeba co najmniej 2 osób.';
+    statusEl.classList.add('err');
+    btn.disabled = false;
     return;
   }
 
-  // losowanie
   const constraints = parseConstraints(constraintsText);
   const assignment = drawSecretSanta(people, constraints);
   if (!assignment) {
     statusEl.textContent = 'Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.';
+    statusEl.classList.add('err');
+    btn.disabled = false;
     return;
   }
 
-  statusEl.textContent = 'Losowanie zakończone, zapisuję w Supabase...';
+  statusEl.textContent = 'Losowanie zakończone, zapisuję w chmurze...';
+  statusEl.classList.add('small');
 
   try {
-    // 1) Utwórz wiersz w draws
+    // 1) draws
     const { data: drawData, error: drawError } = await supabase
       .from('draws')
       .insert({ slug: drawSlug })
@@ -205,16 +347,17 @@ async function generateAndSave() {
 
     if (drawError) {
       console.error(drawError);
-      statusEl.textContent = 'Błąd przy zapisie losowania do draws.';
-      debugOutput.textContent = JSON.stringify(drawError, null, 2);
+      statusEl.textContent = 'Błąd przy zapisie losowania.';
+      statusEl.classList.add('err');
+      btn.disabled = false;
       return;
     }
 
     const drawId = drawData.id;
 
-    // 2) Przygotuj assignments
+    // 2) assignments + lista linków
     const rows = [];
-    let linksText = 'Linki dla uczestników:\n\n';
+    const links = [];
 
     for (const p of people) {
       const receiver = assignment[p];
@@ -231,31 +374,88 @@ async function generateAndSave() {
       url.searchParams.set('name', p);
       url.searchParams.set('token', token);
 
-      linksText += `${p}: ${url.toString()}\n`;
+      links.push({ name: p, url: url.toString() });
     }
 
-    // 3) Zapisz assignments w Supabase
-    const { data: assignData, error: assignError } = await supabase
+    const { error: assignError } = await supabase
       .from('assignments')
-      .insert(rows)
-      .select();
+      .insert(rows);
 
     if (assignError) {
       console.error(assignError);
-      statusEl.textContent = 'Błąd przy zapisie assignments do Supabase.';
-      debugOutput.textContent = JSON.stringify(assignError, null, 2);
+      statusEl.textContent = 'Błąd przy zapisie assignments.';
+      statusEl.classList.add('err');
+      btn.disabled = false;
       return;
     }
 
-    // Sukces
-    statusEl.textContent = 'Gotowe! Losowanie zapisane w Supabase.';
-    linksOutput.textContent = linksText;
-    debugOutput.textContent = 'drawId: ' + drawId + '\n\n' + JSON.stringify(assignData, null, 2);
+    statusEl.textContent = 'Gotowe! Losowanie zakończone. Wyślij linki uczestnikom 🎁';
+    statusEl.classList.add('ok');
+    renderLinks(links);
 
   } catch (e) {
     console.error(e);
     statusEl.textContent = 'Nieoczekiwany błąd.';
-    debugOutput.textContent = String(e);
+    statusEl.classList.add('err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderLinks(links) {
+  const container = document.getElementById('linksOutput');
+  container.innerHTML = '';
+
+  if (!links || links.length === 0) {
+    container.textContent = 'Brak linków (coś poszło nie tak z losowaniem).';
+    return;
+  }
+
+  links.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'link-row';
+
+    const header = document.createElement('div');
+    header.className = 'link-row-header';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'link-row-name';
+    nameSpan.textContent = item.name;
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Kopiuj';
+    btn.addEventListener('click', () => copyToClipboard(item.url, btn));
+
+    header.appendChild(nameSpan);
+    header.appendChild(btn);
+
+    const urlDiv = document.createElement('div');
+    urlDiv.className = 'link-row-url';
+    urlDiv.textContent = item.url;
+
+    row.appendChild(header);
+    row.appendChild(urlDiv);
+    container.appendChild(row);
+  });
+}
+
+async function copyToClipboard(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const original = btn.textContent;
+    btn.textContent = 'Skopiowano! 🎁';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 1500);
+  } catch (e) {
+    console.error('Clipboard error', e);
+    btn.textContent = 'Błąd kopiowania';
+    setTimeout(() => {
+      btn.textContent = 'Kopiuj';
+    }, 1500);
   }
 }
 </script>
