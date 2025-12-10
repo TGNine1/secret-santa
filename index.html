@@ -198,6 +198,9 @@
       <label>Wykluczenia (np. Ania: Tomasz i Tomasz: Ania):</label>
       <textarea id="constraints" rows="4" placeholder="Ania: Tomasz&#10;Tomasz: Ania"></textarea>
 
+      <label>Budżet na prezenty (np. 100 zł):</label>
+      <input type="text" id="budget" placeholder="np. 100 zł">
+
       <button id="generateBtn" onclick="generateAndSave()">🎅 Losuj </button>
 
       <p id="status" class="status"></p>
@@ -303,6 +306,7 @@ async function generateAndSave() {
   btn.disabled = true;
 
   const drawSlug = document.getElementById('drawSlug').value.trim();
+  const budget = document.getElementById('budget').value.trim();
   const peopleText = document.getElementById('people').value;
   const constraintsText = document.getElementById('constraints').value;
 
@@ -337,7 +341,7 @@ async function generateAndSave() {
     // 1) draws
     const { data: drawData, error: drawError } = await supabase
       .from('draws')
-      .insert({ slug: drawSlug })
+      .insert({ slug: drawSlug, budget: budget })
       .select()
       .single();
 
