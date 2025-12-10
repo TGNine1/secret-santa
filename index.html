@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Secret Santa – Organizator (linki osobiste)</title>
+  <title>Secret Santa – Organizator (Supabase)</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
     textarea { width: 100%; box-sizing: border-box; }
@@ -15,21 +15,24 @@
   </style>
 </head>
 <body>
-  <h1>Secret Santa – Organizator (linki osobiste)</h1>
+  <h1>Secret Santa – Organizator (Supabase)</h1>
 
   <div class="box">
-    <p>Ta strona losuje pary z wykluczeniami i generuje <b>osobiste linki</b> dla uczestników.</p>
+    <p>Ta strona losuje pary z wykluczeniami, zapisuje wynik w Supabase i generuje <b>osobiste linki</b>.</p>
     <p class="small">
-      1. Wpisz listę osób i wykluczenia.<br>
-      2. Wpisz <b>bazowy adres strony uczestnika</b> (np. <code>https://tgnine1.github.io/secret-santa/participant.html</code>).<br>
-      3. Kliknij „Losuj i wygeneruj linki”.<br>
-      4. Skopiuj JSON poniżej jako <code>results.json</code> do repozytorium.<br>
-      5. Wyślij każdemu jego link.
+      1. Wpisz nazwę losowania (np. <code>rodzinaA-2024</code>).<br>
+      2. Wpisz listę osób i wykluczenia.<br>
+      3. Kliknij „Losuj i zapisz w Supabase”.<br>
+      4. Skopiuj linki i wyślij je uczestnikom.<br>
+      5. Uczestnicy wchodzą w swoje linki na stronie <code>participant.html</code>.
     </p>
   </div>
 
   <div class="box">
-    <h2>Krok 1: uczestnicy i wykluczenia</h2>
+    <h2>Krok 1: konfiguracja losowania</h2>
+
+    <label>Nazwa losowania (unikalny slug, np. rodzinaA-2024):</label>
+    <input id="drawSlug" style="width:100%;" value="rodzinaA-2024" />
 
     <label>Lista osób (po jednej w linii):</label>
     <textarea id="people" rows="8">Anetka
@@ -48,7 +51,9 @@ Tomasz: Ania</textarea>
     <label>Adres strony uczestnika (participant.html):</label>
     <input id="baseUrl" style="width:100%;" value="https://tgnine1.github.io/secret-santa/participant.html" />
 
-    <button onclick="generateLinks()">Losuj i wygeneruj linki</button>
+    <button onclick="generateAndSave()">Losuj i zapisz w Supabase</button>
+
+    <p id="status" class="small"></p>
   </div>
 
   <div class="box">
@@ -60,14 +65,25 @@ Tomasz: Ania</textarea>
   </div>
 
   <div class="box">
-    <h2>Krok 3: plik results.json</h2>
+    <h2>Krok 3: podsumowanie techniczne</h2>
     <p class="small">
-      Skopiuj poniższy JSON i zapisz jako plik <code>results.json</code> w repozytorium GitHub (obok participant.html).
+      To losowanie zostało zapisane w Supabase w tabelach <code>draws</code> i <code>assignments</code>.<br>
+      Nie musisz już niczego kopiować jako pliki JSON.
     </p>
-    <pre id="jsonOutput"></pre>
+    <pre id="debugOutput"></pre>
   </div>
 
+  <!-- Supabase JS client (z CDN) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <script>
+// === KONFIGURACJA SUPABASE ===
+const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// === LOGIKA LOSOWANIA (jak wcześniej) ===
 function parsePeople(text) {
   return text.split('\n').map(x => x.trim()).filter(x => x.length > 0);
 }
@@ -91,6 +107,16 @@ function shuffle(array) {
   const arr = array.slice();
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[j]]; // błąd, poprawimy poniżej
+  }
+  return arr;
+}
+
+// poprawnna wersja shuffle (zamieniamy w dwóch miejscach)
+function shuffleFixed(array) {
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -104,7 +130,7 @@ function drawSecretSanta(people, constraints, maxTries = 10000) {
     fullConstraints[p] = base;
   }
   for (let t = 0; t < maxTries; t++) {
-    const receivers = shuffle(people);
+    const receivers = shuffleFixed(people);
     const assignment = {};
     let ok = true;
     for (let i = 0; i < people.length; i++) {
@@ -129,53 +155,108 @@ function generateToken(length = 12) {
   return token;
 }
 
-function generateLinks() {
+// === GŁÓWNA FUNKCJA ORGANIZATORA ===
+async function generateAndSave() {
+  const statusEl = document.getElementById('status');
+  const linksOutput = document.getElementById('linksOutput');
+  const debugOutput = document.getElementById('debugOutput');
+
+  statusEl.textContent = '';
+  linksOutput.textContent = '';
+  debugOutput.textContent = '';
+
+  const drawSlug = document.getElementById('drawSlug').value.trim();
   const peopleText = document.getElementById('people').value;
   const constraintsText = document.getElementById('constraints').value;
   const baseUrl = document.getElementById('baseUrl').value.trim();
-  const people = parsePeople(peopleText);
 
-  const linksOutput = document.getElementById('linksOutput');
-  const jsonOutput = document.getElementById('jsonOutput');
-
-  linksOutput.textContent = '';
-  jsonOutput.textContent = '';
-
+  if (!drawSlug) {
+    statusEl.textContent = 'Podaj nazwę losowania (slug).';
+    return;
+  }
   if (!baseUrl) {
-    linksOutput.textContent = 'Podaj adres strony uczestnika (participant.html).';
+    statusEl.textContent = 'Podaj adres strony uczestnika (participant.html).';
     return;
   }
 
+  const people = parsePeople(peopleText);
   if (people.length < 2) {
-    linksOutput.textContent = 'Potrzeba co najmniej 2 osób.';
+    statusEl.textContent = 'Potrzeba co najmniej 2 osób.';
     return;
   }
 
+  // losowanie
   const constraints = parseConstraints(constraintsText);
   const assignment = drawSecretSanta(people, constraints);
-
   if (!assignment) {
-    linksOutput.textContent = 'Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.';
+    statusEl.textContent = 'Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.';
     return;
   }
 
-  const data = {};
-  let linksText = 'Linki dla uczestników:\n\n';
+  statusEl.textContent = 'Losowanie zakończone, zapisuję w Supabase...';
 
-  for (const p of people) {
-    const receiver = assignment[p];
-    const token = generateToken();
-    data[p] = { token, receiver };
+  try {
+    // 1) Utwórz wiersz w draws
+    const { data: drawData, error: drawError } = await supabase
+      .from('draws')
+      .insert({ slug: drawSlug })
+      .select()
+      .single();
 
-    const url = new URL(baseUrl);
-    url.searchParams.set('name', p);
-    url.searchParams.set('token', token);
+    if (drawError) {
+      console.error(drawError);
+      statusEl.textContent = 'Błąd przy zapisie losowania do draws.';
+      debugOutput.textContent = JSON.stringify(drawError, null, 2);
+      return;
+    }
 
-    linksText += `${p}: ${url.toString()}\n`;
+    const drawId = drawData.id;
+
+    // 2) Przygotuj assignments
+    const rows = [];
+    let linksText = 'Linki dla uczestników:\n\n';
+
+    for (const p of people) {
+      const receiver = assignment[p];
+      const token = generateToken();
+      rows.push({
+        draw_id: drawId,
+        name: p,
+        token: token,
+        receiver: receiver
+      });
+
+      const url = new URL(baseUrl);
+      url.searchParams.set('drawId', drawId);
+      url.searchParams.set('name', p);
+      url.searchParams.set('token', token);
+
+      linksText += `${p}: ${url.toString()}\n`;
+    }
+
+    // 3) Zapisz assignments w Supabase
+    const { data: assignData, error: assignError } = await supabase
+      .from('assignments')
+      .insert(rows)
+      .select();
+
+    if (assignError) {
+      console.error(assignError);
+      statusEl.textContent = 'Błąd przy zapisie assignments do Supabase.';
+      debugOutput.textContent = JSON.stringify(assignError, null, 2);
+      return;
+    }
+
+    // Sukces
+    statusEl.textContent = 'Gotowe! Losowanie zapisane w Supabase.';
+    linksOutput.textContent = linksText;
+    debugOutput.textContent = 'drawId: ' + drawId + '\n\n' + JSON.stringify(assignData, null, 2);
+
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = 'Nieoczekiwany błąd.';
+    debugOutput.textContent = String(e);
   }
-
-  linksOutput.textContent = linksText;
-  jsonOutput.textContent = JSON.stringify(data, null, 2);
 }
 </script>
 </body>
