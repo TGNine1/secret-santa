@@ -1,0 +1,34 @@
+{
+  "Anetka": {
+    "token": "SksKkGZJN8aH",
+    "receiver": "Magda"
+  },
+  "Ania": {
+    "token": "zoNPSYvrcHwo",
+    "receiver": "Anetka"
+  },
+  "Danusia": {
+    "token": "hxCprN4bBxkK",
+    "receiver": "Ania"
+  },
+  "Dariusz": {
+    "token": "qwZpGKYMjPkZ",
+    "receiver": "Paulina"
+  },
+  "Magda": {
+    "token": "E2iecRqGDjTZ",
+    "receiver": "Tomasz"
+  },
+  "Marta": {
+    "token": "pfuFReW582Dk",
+    "receiver": "Dariusz"
+  },
+  "Paulina": {
+    "token": "xLJtqRKpdVdC",
+    "receiver": "Marta"
+  },
+  "Tomasz": {
+    "token": "vh9dnA3oVzVu",
+    "receiver": "Danusia"
+  }
+}
