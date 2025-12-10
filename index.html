@@ -23,7 +23,7 @@
       1. Wpisz listę osób i wykluczenia.<br>
       2. Wpisz <b>bazowy adres strony uczestnika</b> (np. <code>https://tgnine1.github.io/secret-santa/participant.html</code>).<br>
       3. Kliknij „Losuj i wygeneruj linki”.<br>
-      4. Skopiuj <code>results.json</code> i wgraj go do repozytorium.<br>
+      4. Skopiuj JSON poniżej jako <code>results.json</code> do repozytorium.<br>
       5. Wyślij każdemu jego link.
     </p>
   </div>
@@ -48,7 +48,7 @@ Tomasz: Ania</textarea>
     <label>Adres strony uczestnika (participant.html):</label>
     <input id="baseUrl" style="width:100%;" value="https://tgnine1.github.io/secret-santa/participant.html" />
 
-    <button id="generateBtn">Losuj i wygeneruj linki</button>
+    <button onclick="generateLinks()">Losuj i wygeneruj linki</button>
   </div>
 
   <div class="box">
@@ -62,14 +62,13 @@ Tomasz: Ania</textarea>
   <div class="box">
     <h2>Krok 3: plik results.json</h2>
     <p class="small">
-      Skopiuj poniższy JSON i wklej go jako plik <code>results.json</code> w repozytorium GitHub (obok participant.html).
+      Skopiuj poniższy JSON i zapisz jako plik <code>results.json</code> w repozytorium GitHub (obok participant.html).
     </p>
     <pre id="jsonOutput"></pre>
   </div>
 
 <script>
 function parsePeople(text) {
-  // split on real newlines, not "\n" literal
   return text.split('\n').map(x => x.trim()).filter(x => x.length > 0);
 }
 
@@ -130,13 +129,11 @@ function generateToken(length = 12) {
   return token;
 }
 
-document.getElementById('generateBtn').addEventListener('click', () => {
+function generateLinks() {
   const peopleText = document.getElementById('people').value;
   const constraintsText = document.getElementById('constraints').value;
   const baseUrl = document.getElementById('baseUrl').value.trim();
   const people = parsePeople(peopleText);
-
-  console.log('People parsed:', people);
 
   const linksOutput = document.getElementById('linksOutput');
   const jsonOutput = document.getElementById('jsonOutput');
@@ -148,6 +145,7 @@ document.getElementById('generateBtn').addEventListener('click', () => {
     linksOutput.textContent = 'Podaj adres strony uczestnika (participant.html).';
     return;
   }
+
   if (people.length < 2) {
     linksOutput.textContent = 'Potrzeba co najmniej 2 osób.';
     return;
@@ -178,7 +176,7 @@ document.getElementById('generateBtn').addEventListener('click', () => {
 
   linksOutput.textContent = linksText;
   jsonOutput.textContent = JSON.stringify(data, null, 2);
-});
+}
 </script>
 </body>
 </html>
