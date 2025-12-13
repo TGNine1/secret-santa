@@ -118,6 +118,25 @@
       #result {
         font-size: 20px;
       }
+      .result-appear {
+  animation: resultAppear 0.45s ease-out;
+}
+
+  @keyframes resultAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading {
+  font-size: 13px;
+  color: var(--text-muted);
+}
     }
   </style>
 </head>
@@ -132,7 +151,7 @@
       <p class="subtitle">
         Otworzyłeś osobisty link do losowania prezentów. Sprawdź, komu kupujesz prezent!
       </p>
-
+      <p id="status" class="loading"></p>
       <p id="info"></p>
       <p id="result"></p>
       <p id="budgetInfo" class="small"></p>
@@ -166,17 +185,20 @@
   }
 
   async function showResult() {
+  const statusEl = document.getElementById('status');
   const infoEl = document.getElementById('info');
   const resultEl = document.getElementById('result');
   const errorEl = document.getElementById('error');
   const budgetEl = document.getElementById('budgetInfo');
   const wishEl = document.getElementById('wishInfo');
 
+  statusEl.textContent = '';
   errorEl.textContent = '';
   resultEl.textContent = '';
   infoEl.textContent = '';
   budgetEl.textContent = '';
   wishEl.textContent = '';
+  resultEl.classList.remove('result-appear');
 
   const drawId = getQueryParam('drawId');
   const name = getQueryParam('name');
@@ -187,10 +209,11 @@
     return;
   }
 
+  statusEl.textContent = 'Ładuję Twoje losowanie... ⏳';
   infoEl.textContent = `Cześć, ${name}!`;
 
   try {
-    // 1) Odczyt assignmentu dla tej osoby
+    // 1) assignment
     const { data: assignment, error: assignError } = await supabase
       .from('assignments')
       .select('receiver, token, draw_id')
@@ -201,21 +224,24 @@
 
     if (assignError) {
       console.error(assignError);
+      statusEl.textContent = '';
       errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
       return;
     }
 
     if (!assignment) {
+      statusEl.textContent = '';
       errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
       return;
     }
 
     if (assignment.token !== token) {
+      statusEl.textContent = '';
       errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
       return;
     }
 
-    // 2) Odczyt budżetu i linku do życzeń z draws
+    // 2) draws: budget + wish_link
     const { data: draw, error: drawError } = await supabase
       .from('draws')
       .select('budget, wish_link')
@@ -225,10 +251,12 @@
 
     if (drawError) {
       console.error(drawError);
-      // budżet / link nie są krytyczne, więc nie przerywamy
+      // nie blokujemy przez błąd budżetu/linku
     }
 
+    statusEl.textContent = '';
     resultEl.textContent = 'Kupujesz prezent dla: ' + assignment.receiver + ' 🎁';
+    resultEl.classList.add('result-appear');
 
     if (draw) {
       if (draw.budget && draw.budget.trim() !== '') {
@@ -237,18 +265,18 @@
 
       if (draw.wish_link && draw.wish_link.trim() !== '') {
         const safeUrl = draw.wish_link.trim();
-        // prosty opis – możesz zmienić tekst wedle uznania
-        wishEl.innerHTML = 'Lista życzeń: ' +
+        wishEl.innerHTML =
+          'Lista życzeń: ' +
           '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#0f8b0f;">otwórz plik z życzeniami</a>';
       }
     }
 
   } catch (e) {
     console.error(e);
+    statusEl.textContent = '';
     errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
   }
 }
-
   showResult();
 </script>
 </body>
