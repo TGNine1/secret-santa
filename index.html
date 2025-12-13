@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>🎄 Secret Santa – Organizator 🎁</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -170,16 +169,6 @@
       transform: translateY(1px);
       box-shadow: 0 0 1px rgba(0,0,0,0.2);
     }
-
-    /* highlight box po sukcesie */
-    .box.highlight {
-      animation: boxHighlight 1.2s ease-out;
-    }
-    @keyframes boxHighlight {
-      0%   { box-shadow: 0 0 0 rgba(15,138,15,0.0); border-color: rgba(15,138,15,0.0); }
-      40%  { box-shadow: 0 0 12px rgba(15,138,15,0.45); border-color: rgba(15,138,15,0.6); }
-      100% { box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.04); }
-    }
   </style>
 </head>
 <body>
@@ -196,41 +185,31 @@
     <div class="box">
       <h2><span class="emoji">🧩</span>Krok 1: konfiguracja losowania</h2>
       <p class="small">
-        Wpisz nazwę losowania (np. <code>Superaki 2025</code>), uczestników oraz wykluczenia.
+        Wpisz nazwę losowania, uczestników oraz wykluczenia.
         Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁
       </p>
 
-      <label>Nazwa losowania (np. Superaki 2025):</label>
+      <label>Nazwa losowania:</label>
       <input type="text" id="drawSlug" placeholder="np. Superaki 2025">
 
       <label>Lista osób (po jednej w linii):</label>
       <textarea id="people" rows="8" placeholder="Wpisz imiona, po jednym w linii"></textarea>
 
-      <label>Wykluczenia (np. Ania: Tomasz i Tomasz: Ania):</label>
+      <label>Wykluczenia (opcjonalnie - wskaż w osobnych liniach osoby które nie mogą się wylosować):</label>
       <textarea id="constraints" rows="4" placeholder="Ania: Tomasz&#10;Tomasz: Ania"></textarea>
-      <p class="small">
-        Wpisuj po jednej regule w linii: <code>Imię: Imię</code>.
-        Np. <code>Ania: Tomasz</code> oznacza, że Ania nie może wylosować Tomasza.
-      </p>
 
-      <label>Budżet na prezenty (np. 100 zł):</label>
+      <label>Budżet na prezenty (opcjonalnie):</label>
       <input type="text" id="budget" placeholder="np. 100 zł">
-      <p class="small">
-        Ta informacja pojawi się u każdego uczestnika razem z wynikiem losowania.
-      </p>
 
-      <label>Link do listy życzeń (opcjonalnie, np. arkusz Google/OneDrive):</label>
-      <input type="text" id="wishLink" placeholder="np. link do wspólnego pliku z życzeniami">
-      <p class="small">
-        Jeśli wpiszesz link, uczestnik zobaczy go pod swoim wynikiem jako „Lista życzeń”.
-      </p>
+      <label>Link do listy życzeń (opcjonalnie):</label>
+      <input type="text" id="wishLink" placeholder="Link do Google Documents, OneDrive itp.">
 
       <button id="generateBtn" onclick="generateAndSave()">🎅 Losuj </button>
 
       <p id="status" class="status"></p>
     </div>
 
-    <div class="box" id="linksBox">
+    <div class="box">
       <h2><span class="emoji">📨</span>Krok 2: linki dla uczestników</h2>
       <p class="small">
         Skopiuj tę listę i wyślij każdemu <b>tylko jego link</b> (np. SMS-em, mailem albo na Messengerze).
@@ -239,10 +218,9 @@
       <div id="linksOutput"></div>
     </div>
   </main>
-
-  <footer style="max-width:900px;margin:0 auto 16px auto;padding:0 16px;font-size:12px;color:#777;text-align:right;">
-    Stworzone przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener" style="color:#8b0000;text-decoration:none;">@tgnine1</a>
-  </footer>
+    <footer style="max-width:900px;margin:0 auto 16px auto;padding:0 16px;font-size:12px;color:#777;text-align:right;">
+    Stworzone na użytek prywatny przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener" style="color:#8b0000;text-decoration:none;">@TGNine1</a>
+    </footer>
 
   <!-- Supabase JS client (z CDN) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -254,7 +232,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Stały adres strony uczestnika
+  // Stały adres strony uczestnika (jeśli zmienisz repo/URL, popraw tu)
 const BASE_PARTICIPANT_URL = "https://tgnine1.github.io/secret-santa/participant.html";
 
 // === LOGIKA LOSOWANIA ===
@@ -367,9 +345,14 @@ async function generateAndSave() {
     // 1) draws
     const { data: drawData, error: drawError } = await supabase
       .from('draws')
-      .insert({ slug: drawSlug, budget: budget, wish_link: wishLink })
+      .insert({
+        slug: drawSlug,
+        budget: budget,
+        wish_link: wishLink
+      })
       .select()
       .single();
+
 
     if (drawError) {
       console.error(drawError);
@@ -419,7 +402,71 @@ async function generateAndSave() {
     statusEl.classList.add('ok');
     renderLinks(links);
 
-    // UX: scroll + highlight Krok 2
-    const linksBox = document.getElementById('linksBox');
-    if (linksBox) {
-      linksBox.scrollIntoView({ behavior: 'smooth', block
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = 'Nieoczekiwany błąd.';
+    statusEl.classList.add('err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderLinks(links) {
+  const container = document.getElementById('linksOutput');
+  container.innerHTML = '';
+
+  if (!links || links.length === 0) {
+    container.textContent = 'Brak linków (coś poszło nie tak z losowaniem).';
+    return;
+  }
+
+  links.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'link-row';
+
+    const header = document.createElement('div');
+    header.className = 'link-row-header';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'link-row-name';
+    nameSpan.textContent = item.name;
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Kopiuj';
+    btn.addEventListener('click', () => copyToClipboard(item.url, btn));
+
+    header.appendChild(nameSpan);
+    header.appendChild(btn);
+
+    const urlDiv = document.createElement('div');
+    urlDiv.className = 'link-row-url';
+    urlDiv.textContent = item.url;
+
+    row.appendChild(header);
+    row.appendChild(urlDiv);
+    container.appendChild(row);
+  });
+}
+
+async function copyToClipboard(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const original = btn.textContent;
+    btn.textContent = 'Skopiowano! 🎁';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 1500);
+  } catch (e) {
+    console.error('Clipboard error', e);
+    btn.textContent = 'Błąd kopiowania';
+    setTimeout(() => {
+      btn.textContent = 'Kopiuj';
+    }, 1500);
+  }
+}
+</script>
+</body>
+</html>
