@@ -189,7 +189,7 @@
         Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁
       </p>
 
-      <label>Nazwa losowania (np. Superaki 2025):</label>
+      <label>Nazwa losowania:</label>
       <input type="text" id="drawSlug" placeholder="np. Superaki 2025">
 
       <label>Lista osób (po jednej w linii):</label>
@@ -199,7 +199,10 @@
       <textarea id="constraints" rows="4" placeholder="Ania: Tomasz&#10;Tomasz: Ania"></textarea>
 
       <label>Budżet na prezenty (np. 100 zł):</label>
-      <input type="text" id="budget" placeholder="np. 100 zł">
+      <input type="text" id="budget" placeholder="Opcjonalnie">
+
+      <label>Link do listy życzeń (np. Google Documents/OneDrive):</label>
+      <input type="text" id="wishLink" placeholder="Opcjonalnie">
 
       <button id="generateBtn" onclick="generateAndSave()">🎅 Losuj </button>
 
@@ -216,7 +219,7 @@
     </div>
   </main>
     <footer style="max-width:900px;margin:0 auto 16px auto;padding:0 16px;font-size:12px;color:#777;text-align:right;">
-    Stworzone przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener" style="color:#8b0000;text-decoration:none;">@tgnine1</a>
+    Stworzone na użytek prywatny przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener" style="color:#8b0000;text-decoration:none;">@TGNine1</a>
     </footer>
 
   <!-- Supabase JS client (z CDN) -->
@@ -307,6 +310,7 @@ async function generateAndSave() {
 
   const drawSlug = document.getElementById('drawSlug').value.trim();
   const budget = document.getElementById('budget').value.trim();
+  const wishLink = document.getElementById('wishLink').value.trim();
   const peopleText = document.getElementById('people').value;
   const constraintsText = document.getElementById('constraints').value;
 
@@ -341,9 +345,14 @@ async function generateAndSave() {
     // 1) draws
     const { data: drawData, error: drawError } = await supabase
       .from('draws')
-      .insert({ slug: drawSlug, budget: budget })
+      .insert({
+        slug: drawSlug,
+        budget: budget,
+        wish_link: wishLink
+      })
       .select()
       .single();
+
 
     if (drawError) {
       console.error(drawError);
