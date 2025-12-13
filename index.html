@@ -185,7 +185,7 @@
     <div class="box">
       <h2><span class="emoji">🧩</span>Krok 1: konfiguracja losowania</h2>
       <p class="small">
-        Wpisz nazwę losowania (np. <code>Superaki 2025</code>), uczestników oraz wykluczenia.
+        Wpisz nazwę losowania, uczestników oraz wykluczenia.
         Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁
       </p>
 
@@ -195,14 +195,14 @@
       <label>Lista osób (po jednej w linii):</label>
       <textarea id="people" rows="8" placeholder="Wpisz imiona, po jednym w linii"></textarea>
 
-      <label>Wykluczenia (np. Ania: Tomasz i Tomasz: Ania):</label>
+      <label>Wykluczenia (opcjonalnie - wskaż w osobnych liniach osoby które nie mogą się wylosować):</label>
       <textarea id="constraints" rows="4" placeholder="Ania: Tomasz&#10;Tomasz: Ania"></textarea>
 
-      <label>Budżet na prezenty (np. 100 zł):</label>
-      <input type="text" id="budget" placeholder="Opcjonalnie">
+      <label>Budżet na prezenty (opcjonalnie):</label>
+      <input type="text" id="budget" placeholder="np. 100 zł">
 
-      <label>Link do listy życzeń (np. Google Documents/OneDrive):</label>
-      <input type="text" id="wishLink" placeholder="Opcjonalnie">
+      <label>Link do listy życzeń (opcjonalnie):</label>
+      <input type="text" id="wishLink" placeholder="Link do Google Documents, OneDrive itp.">
 
       <button id="generateBtn" onclick="generateAndSave()">🎅 Losuj </button>
 
