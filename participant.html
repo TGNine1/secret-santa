@@ -64,6 +64,13 @@
       margin-bottom: 16px;
     }
 
+    #status {
+      font-size: 13px;
+      color: var(--text-muted);
+      min-height: 16px;
+      margin-bottom: 4px;
+    }
+
     #info {
       font-size: 15px;
       margin-bottom: 8px;
@@ -74,12 +81,21 @@
       font-weight: 600;
       color: var(--accent-green);
       margin-top: 8px;
+      min-height: 22px;
+    }
+
+    #budgetInfo,
+    #wishInfo {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      margin-bottom: 0;
     }
 
     #error {
       color: var(--accent-red);
       font-size: 14px;
-      margin-top: 8px;
+      margin-top: 10px;
       min-height: 18px;
     }
 
@@ -108,6 +124,21 @@
       text-decoration: underline;
     }
 
+    /* Animacja wejścia wyniku */
+    .result-appear {
+      animation: resultAppear 0.45s ease-out;
+    }
+    @keyframes resultAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @media (min-width: 768px) {
       main {
         margin-top: 40px;
@@ -118,25 +149,6 @@
       #result {
         font-size: 20px;
       }
-      .result-appear {
-  animation: resultAppear 0.45s ease-out;
-}
-
-  @keyframes resultAppear {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.loading {
-  font-size: 13px;
-  color: var(--text-muted);
-}
     }
   </style>
 </head>
@@ -151,11 +163,12 @@
       <p class="subtitle">
         Otworzyłeś osobisty link do losowania prezentów. Sprawdź, komu kupujesz prezent!
       </p>
-      <p id="status" class="loading"></p>
+
+      <p id="status"></p>
       <p id="info"></p>
       <p id="result"></p>
-      <p id="budgetInfo" class="small"></p>
-      <p id="wishInfo" class="small"></p>
+      <p id="budgetInfo"></p>
+      <p id="wishInfo"></p>
       <p id="error"></p>
 
       <p class="small">
@@ -165,8 +178,8 @@
   </main>
 
   <footer>
-    Stworzone na użytek prywatny przez
-    <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@TGNine1</a>
+    Stworzone przez
+    <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@tgnine1</a>
   </footer>
 
   <!-- Supabase JS client -->
@@ -174,8 +187,8 @@
 
 <script>
   // === KONFIGURACJA SUPABASE ===
-  const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";            // <-- zostaw / podmień na swój
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU"; // <-- zostaw / podmień na swój
+  const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU";
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -185,98 +198,99 @@
   }
 
   async function showResult() {
-  const statusEl = document.getElementById('status');
-  const infoEl = document.getElementById('info');
-  const resultEl = document.getElementById('result');
-  const errorEl = document.getElementById('error');
-  const budgetEl = document.getElementById('budgetInfo');
-  const wishEl = document.getElementById('wishInfo');
-
-  statusEl.textContent = '';
-  errorEl.textContent = '';
-  resultEl.textContent = '';
-  infoEl.textContent = '';
-  budgetEl.textContent = '';
-  wishEl.textContent = '';
-  resultEl.classList.remove('result-appear');
-
-  const drawId = getQueryParam('drawId');
-  const name = getQueryParam('name');
-  const token = getQueryParam('token');
-
-  if (!drawId || !name || !token) {
-    errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
-    return;
-  }
-
-  statusEl.textContent = 'Ładuję Twoje losowanie... ⏳';
-  infoEl.textContent = `Cześć, ${name}!`;
-
-  try {
-    // 1) assignment
-    const { data: assignment, error: assignError } = await supabase
-      .from('assignments')
-      .select('receiver, token, draw_id')
-      .eq('draw_id', drawId)
-      .eq('name', name)
-      .limit(1)
-      .maybeSingle();
-
-    if (assignError) {
-      console.error(assignError);
-      statusEl.textContent = '';
-      errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
-      return;
-    }
-
-    if (!assignment) {
-      statusEl.textContent = '';
-      errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
-      return;
-    }
-
-    if (assignment.token !== token) {
-      statusEl.textContent = '';
-      errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
-      return;
-    }
-
-    // 2) draws: budget + wish_link
-    const { data: draw, error: drawError } = await supabase
-      .from('draws')
-      .select('budget, wish_link')
-      .eq('id', assignment.draw_id)
-      .limit(1)
-      .maybeSingle();
-
-    if (drawError) {
-      console.error(drawError);
-      // nie blokujemy przez błąd budżetu/linku
-    }
+    const statusEl = document.getElementById('status');
+    const infoEl = document.getElementById('info');
+    const resultEl = document.getElementById('result');
+    const errorEl = document.getElementById('error');
+    const budgetEl = document.getElementById('budgetInfo');
+    const wishEl = document.getElementById('wishInfo');
 
     statusEl.textContent = '';
-    resultEl.textContent = 'Kupujesz prezent dla: ' + assignment.receiver + ' 🎁';
-    resultEl.classList.add('result-appear');
+    errorEl.textContent = '';
+    resultEl.textContent = '';
+    infoEl.textContent = '';
+    budgetEl.textContent = '';
+    wishEl.textContent = '';
+    resultEl.classList.remove('result-appear');
 
-    if (draw) {
-      if (draw.budget && draw.budget.trim() !== '') {
-        budgetEl.textContent = 'Ustalony budżet na prezenty: ' + draw.budget;
-      }
+    const drawId = getQueryParam('drawId');
+    const name = getQueryParam('name');
+    const token = getQueryParam('token');
 
-      if (draw.wish_link && draw.wish_link.trim() !== '') {
-        const safeUrl = draw.wish_link.trim();
-        wishEl.innerHTML =
-          'Lista życzeń: ' +
-          '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#0f8b0f;">otwórz plik z życzeniami</a>';
-      }
+    if (!drawId || !name || !token) {
+      errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
+      return;
     }
 
-  } catch (e) {
-    console.error(e);
-    statusEl.textContent = '';
-    errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+    statusEl.textContent = 'Ładuję Twoje losowanie... ⏳';
+    infoEl.textContent = `Cześć, ${name}!`;
+
+    try {
+      // 1) assignment
+      const { data: assignment, error: assignError } = await supabase
+        .from('assignments')
+        .select('receiver, token, draw_id')
+        .eq('draw_id', drawId)
+        .eq('name', name)
+        .limit(1)
+        .maybeSingle();
+
+      if (assignError) {
+        console.error(assignError);
+        statusEl.textContent = '';
+        errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
+        return;
+      }
+
+      if (!assignment) {
+        statusEl.textContent = '';
+        errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
+        return;
+      }
+
+      if (assignment.token !== token) {
+        statusEl.textContent = '';
+        errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
+        return;
+      }
+
+      // 2) draws: budget + wish_link
+      const { data: draw, error: drawError } = await supabase
+        .from('draws')
+        .select('budget, wish_link')
+        .eq('id', assignment.draw_id)
+        .limit(1)
+        .maybeSingle();
+
+      if (drawError) {
+        console.error(drawError);
+        // nie blokujemy przez błąd budżetu / linku
+      }
+
+      statusEl.textContent = '';
+      resultEl.textContent = 'Kupujesz prezent dla: ' + assignment.receiver + ' 🎁';
+      resultEl.classList.add('result-appear');
+
+      if (draw) {
+        if (draw.budget && draw.budget.trim() !== '') {
+          budgetEl.textContent = 'Ustalony budżet na prezenty: ' + draw.budget;
+        }
+
+        if (draw.wish_link && draw.wish_link.trim() !== '') {
+          const safeUrl = draw.wish_link.trim();
+          wishEl.innerHTML =
+            'Lista życzeń: ' +
+            '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#0f8b0f;">otwórz plik z życzeniami</a>';
+        }
+      }
+
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = '';
+      errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+    }
   }
-}
+
   showResult();
 </script>
 </body>
