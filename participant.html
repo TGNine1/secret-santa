@@ -135,6 +135,8 @@
 
       <p id="info"></p>
       <p id="result"></p>
+      <p id="budgetInfo" class="small"></p>
+      <p id="wishInfo" class="small"></p>
       <p id="error"></p>
 
       <p class="small">
@@ -144,8 +146,8 @@
   </main>
 
   <footer>
-    Stworzone przez
-    <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@tgnine1</a>
+    Stworzone na użytek prywatny przez
+    <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@TGNine1</a>
   </footer>
 
   <!-- Supabase JS client -->
@@ -164,57 +166,88 @@
   }
 
   async function showResult() {
-    const infoEl = document.getElementById('info');
-    const resultEl = document.getElementById('result');
-    const errorEl = document.getElementById('error');
+  const infoEl = document.getElementById('info');
+  const resultEl = document.getElementById('result');
+  const errorEl = document.getElementById('error');
+  const budgetEl = document.getElementById('budgetInfo');
+  const wishEl = document.getElementById('wishInfo');
 
-    errorEl.textContent = '';
-    resultEl.textContent = '';
-    infoEl.textContent = '';
+  errorEl.textContent = '';
+  resultEl.textContent = '';
+  infoEl.textContent = '';
+  budgetEl.textContent = '';
+  wishEl.textContent = '';
 
-    const drawId = getQueryParam('drawId');
-    const name = getQueryParam('name');
-    const token = getQueryParam('token');
+  const drawId = getQueryParam('drawId');
+  const name = getQueryParam('name');
+  const token = getQueryParam('token');
 
-    if (!drawId || !name || !token) {
-      errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
+  if (!drawId || !name || !token) {
+    errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
+    return;
+  }
+
+  infoEl.textContent = `Cześć, ${name}!`;
+
+  try {
+    // 1) Odczyt assignmentu dla tej osoby
+    const { data: assignment, error: assignError } = await supabase
+      .from('assignments')
+      .select('receiver, token, draw_id')
+      .eq('draw_id', drawId)
+      .eq('name', name)
+      .limit(1)
+      .maybeSingle();
+
+    if (assignError) {
+      console.error(assignError);
+      errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
       return;
     }
 
-    infoEl.textContent = `Cześć, ${name}!`;
-
-    try {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('receiver, token')
-        .eq('draw_id', drawId)
-        .eq('name', name)
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error(error);
-        errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
-        return;
-      }
-
-      if (!data) {
-        errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
-        return;
-      }
-
-      if (data.token !== token) {
-        errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
-        return;
-      }
-
-      resultEl.textContent = 'Kupujesz prezent dla: ' + data.receiver + ' 🎁';
-
-    } catch (e) {
-      console.error(e);
-      errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+    if (!assignment) {
+      errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
+      return;
     }
+
+    if (assignment.token !== token) {
+      errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
+      return;
+    }
+
+    // 2) Odczyt budżetu i linku do życzeń z draws
+    const { data: draw, error: drawError } = await supabase
+      .from('draws')
+      .select('budget, wish_link')
+      .eq('id', assignment.draw_id)
+      .limit(1)
+      .maybeSingle();
+
+    if (drawError) {
+      console.error(drawError);
+      // budżet / link nie są krytyczne, więc nie przerywamy
+    }
+
+    resultEl.textContent = 'Kupujesz prezent dla: ' + assignment.receiver + ' 🎁';
+
+    if (draw) {
+      if (draw.budget && draw.budget.trim() !== '') {
+        budgetEl.textContent = 'Ustalony budżet na prezenty: ' + draw.budget;
+      }
+
+      if (draw.wish_link && draw.wish_link.trim() !== '') {
+        const safeUrl = draw.wish_link.trim();
+        // prosty opis – możesz zmienić tekst wedle uznania
+        wishEl.innerHTML = 'Lista życzeń: ' +
+          '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#0f8b0f;">otwórz plik z życzeniami</a>';
+      }
+    }
+
+  } catch (e) {
+    console.error(e);
+    errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
   }
+}
 
   showResult();
 </script>
