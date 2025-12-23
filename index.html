@@ -353,7 +353,6 @@ async function generateAndSave() {
       .select()
       .single();
 
-
     if (drawError) {
       console.error(drawError);
       statusEl.textContent = 'Błąd przy zapisie losowania.';
@@ -409,6 +408,7 @@ async function generateAndSave() {
   } finally {
     btn.disabled = false;
   }
+}  // <<< TA KLA MRA BYŁA BRAKUJĄCA
 
 function renderLinks(links) {
   const container = document.getElementById('linksOutput');
