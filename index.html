@@ -222,8 +222,8 @@
     Stworzone na użytek prywatny przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener" style="color:#8b0000;text-decoration:none;">@TGNine1</a>
     </footer>
 
-  <!-- Supabase JS client (z CDN) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- Supabase JS client (z CDN) -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
 // === KONFIGURACJA SUPABASE ===
@@ -232,7 +232,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Stały adres strony uczestnika (jeśli zmienisz repo/URL, popraw tu)
+// Stały adres strony uczestnika (jeśli zmienisz repo/URL, popraw tu)
 const BASE_PARTICIPANT_URL = "https://tgnine1.github.io/secret-santa/p.html";
 
 // === LOGIKA LOSOWANIA ===
@@ -408,7 +408,7 @@ async function generateAndSave() {
   } finally {
     btn.disabled = false;
   }
-}  // <<< TA KLA MRA BYŁA BRAKUJĄCA
+}
 
 function renderLinks(links) {
   const container = document.getElementById('linksOutput');
