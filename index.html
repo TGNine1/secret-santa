@@ -230,7 +230,7 @@
 const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Stały adres strony uczestnika (jeśli zmienisz repo/URL, popraw tu)
 const BASE_PARTICIPANT_URL = "https://tgnine1.github.io/secret-santa/p.html";
@@ -343,7 +343,7 @@ async function generateAndSave() {
 
   try {
     // 1) draws
-    const { data: drawData, error: drawError } = await supabase
+    const { data: drawData, error: drawError } = await _supabase
       .from('draws')
       .insert({
         slug: drawSlug,
@@ -385,7 +385,7 @@ async function generateAndSave() {
       links.push({ name: p, url: url.toString() });
     }
 
-    const { error: assignError } = await supabase
+    const { error: assignError } = await _supabase
       .from('assignments')
       .insert(rows);
 
