@@ -158,7 +158,7 @@
   const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";            // <-- zostaw / podmień na swój
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU"; // <-- zostaw / podmień na swój
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   function getQueryParam(name) {
     const params = new URLSearchParams(window.location.search);
@@ -191,7 +191,7 @@
 
   try {
     // 1) Odczyt assignmentu dla tej osoby
-    const { data: assignment, error: assignError } = await supabase
+    const { data: assignment, error: assignError } = await _supabase
       .from('assignments')
       .select('receiver, token, draw_id')
       .eq('draw_id', drawId)
@@ -216,7 +216,7 @@
     }
 
     // 2) Odczyt budżetu i linku do życzeń z draws
-    const { data: draw, error: drawError } = await supabase
+    const { data: draw, error: drawError } = await _supabase
       .from('draws')
       .select('budget, wish_link')
       .eq('id', assignment.draw_id)
