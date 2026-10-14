@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
   <title>🎄 Secret Santa – Organizator 🎁</title>
   <style>
     body {
@@ -122,7 +123,7 @@
       color: #0f7a0f;
     }
     .status.err {
-      color: #ffd5d5;
+      color: #b00020;
     }
     #linksOutput {
       font-size: 13px;
@@ -223,17 +224,19 @@
     </footer>
 
 <!-- Supabase JS client (z CDN) -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <script>
 // === KONFIGURACJA SUPABASE ===
+// Klucz "anon" jest publiczny z założenia. Bezpieczeństwo zapewniają reguły w bazie
+// (patrz supabase-setup.sql): przeglądarka nie czyta tabel, tylko wywołuje funkcje.
 const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU";
 
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Stały adres strony uczestnika (jeśli zmienisz repo/URL, popraw tu)
-const BASE_PARTICIPANT_URL = "https://tgnine1.github.io/secret-santa/p.html";
+// Adres strony uczestnika liczony względem tej strony - działa na każdym hostingu.
+const PARTICIPANT_URL = new URL('p.html', window.location.href).toString();
 
 // === LOGIKA LOSOWANIA ===
 function parsePeople(text) {
@@ -329,6 +332,20 @@ async function generateAndSave() {
     return;
   }
 
+  if (new Set(people).size !== people.length) {
+    statusEl.textContent = 'Na liście są powtórzone imiona. Każda osoba musi mieć unikalne imię.';
+    statusEl.classList.add('err');
+    btn.disabled = false;
+    return;
+  }
+
+  if (wishLink && !/^https?:\/\//i.test(wishLink)) {
+    statusEl.textContent = 'Link do listy życzeń musi zaczynać się od http:// lub https://';
+    statusEl.classList.add('err');
+    btn.disabled = false;
+    return;
+  }
+
   const constraints = parseConstraints(constraintsText);
   const assignment = drawSecretSanta(people, constraints);
   if (!assignment) {
@@ -342,60 +359,37 @@ async function generateAndSave() {
   statusEl.classList.add('small');
 
   try {
-    // 1) draws
-    const { data: drawData, error: drawError } = await _supabase
-      .from('draws')
-      .insert({
-        slug: drawSlug,
-        budget: budget,
-        wish_link: wishLink
-      })
-      .select()
-      .single();
+    // Wszystko zapisuje jedna funkcja w bazie (create_draw): atomowo, a tokeny
+    // generuje serwer. Przeglądarka nie ma bezpośredniego dostępu do tabel.
+    const pairs = people.map(p => ({ giver: p, receiver: assignment[p] }));
 
-    if (drawError) {
-      console.error(drawError);
-      statusEl.textContent = 'Błąd przy zapisie losowania.';
+    const { data, error } = await _supabase.rpc('create_draw', {
+      p_slug: drawSlug,
+      p_budget: budget,
+      p_wish_link: wishLink,
+      p_pairs: pairs
+    });
+
+    if (error) {
+      console.error(error);
+      const msg = error.message || '';
+      if (msg.includes('slug_taken')) {
+        statusEl.textContent = 'Losowanie o takiej nazwie już istnieje. Wybierz inną nazwę.';
+      } else {
+        statusEl.textContent = 'Błąd przy zapisie losowania.';
+      }
       statusEl.classList.add('err');
-      btn.disabled = false;
       return;
     }
 
-    const drawId = drawData.id;
-
-    // 2) assignments + lista linków
-    const rows = [];
-    const links = [];
-
-    for (const p of people) {
-      const receiver = assignment[p];
-      const token = generateToken();
-      rows.push({
-        draw_id: drawId,
-        name: p,
-        token: token,
-        receiver: receiver
-      });
-
-      const url = new URL(BASE_PARTICIPANT_URL);
-      url.searchParams.set('drawId', drawId);
-      url.searchParams.set('name', p);
-      url.searchParams.set('token', token);
-
-      links.push({ name: p, url: url.toString() });
-    }
-
-    const { error: assignError } = await _supabase
-      .from('assignments')
-      .insert(rows);
-
-    if (assignError) {
-      console.error(assignError);
-      statusEl.textContent = 'Błąd przy zapisie assignments.';
-      statusEl.classList.add('err');
-      btn.disabled = false;
-      return;
-    }
+    const links = (data || []).map(row => {
+      const url = new URL(PARTICIPANT_URL);
+      url.searchParams.set('drawId', row.out_draw_id);
+      url.searchParams.set('name', row.out_name);
+      url.searchParams.set('token', row.out_token);
+      return { name: row.out_name, url: url.toString() };
+    });
+    links.sort((a, b) => people.indexOf(a.name) - people.indexOf(b.name));
 
     statusEl.textContent = 'Gotowe! Losowanie zakończone. Wyślij linki uczestnikom 🎁';
     statusEl.classList.add('ok');

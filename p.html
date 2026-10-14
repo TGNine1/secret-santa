@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>🎄 Secret Santa – Uczestnik 🎁</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
   <style>
     :root {
       --bg-main: #f3efe7;
@@ -151,10 +153,12 @@
   </footer>
 
   <!-- Supabase JS client -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <script>
   // === KONFIGURACJA SUPABASE ===
+  // Klucz "anon" jest publiczny z założenia. Bezpieczeństwo zapewniają reguły w bazie
+  // (patrz supabase-setup.sql): wynik zwraca funkcja get_assignment tylko przy poprawnym tokenie.
   const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";            // <-- zostaw / podmień na swój
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU"; // <-- zostaw / podmień na swój
 
@@ -165,89 +169,83 @@
     return params.get(name);
   }
 
+  // Zwraca poprawny adres http(s) albo null (blokuje m.in. javascript:)
+  function safeHttpUrl(value) {
+    try {
+      const u = new URL(value);
+      return (u.protocol === 'https:' || u.protocol === 'http:') ? u.toString() : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   async function showResult() {
-  const infoEl = document.getElementById('info');
-  const resultEl = document.getElementById('result');
-  const errorEl = document.getElementById('error');
-  const budgetEl = document.getElementById('budgetInfo');
-  const wishEl = document.getElementById('wishInfo');
+    const infoEl = document.getElementById('info');
+    const resultEl = document.getElementById('result');
+    const errorEl = document.getElementById('error');
+    const budgetEl = document.getElementById('budgetInfo');
+    const wishEl = document.getElementById('wishInfo');
 
-  errorEl.textContent = '';
-  resultEl.textContent = '';
-  infoEl.textContent = '';
-  budgetEl.textContent = '';
-  wishEl.textContent = '';
+    errorEl.textContent = '';
+    resultEl.textContent = '';
+    infoEl.textContent = '';
+    budgetEl.textContent = '';
+    wishEl.textContent = '';
 
-  const drawId = getQueryParam('drawId');
-  const name = getQueryParam('name');
-  const token = getQueryParam('token');
+    const drawId = getQueryParam('drawId');
+    const name = getQueryParam('name');
+    const token = getQueryParam('token');
 
-  if (!drawId || !name || !token) {
-    errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
-    return;
-  }
-
-  infoEl.textContent = `Cześć, ${name}!`;
-
-  try {
-    // 1) Odczyt assignmentu dla tej osoby
-    const { data: assignment, error: assignError } = await _supabase
-      .from('assignments')
-      .select('receiver, token, draw_id')
-      .eq('draw_id', drawId)
-      .eq('name', name)
-      .limit(1)
-      .maybeSingle();
-
-    if (assignError) {
-      console.error(assignError);
-      errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
+    if (!drawId || !name || !token) {
+      errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
       return;
     }
 
-    if (!assignment) {
-      errorEl.textContent = 'Nie znaleziono Twojego wpisu. Sprawdź, czy masz właściwy link.';
-      return;
-    }
+    infoEl.textContent = `Cześć, ${name}!`;
 
-    if (assignment.token !== token) {
-      errorEl.textContent = 'Ten link wydaje się nieprawidłowy lub wygasł. Skontaktuj się z organizatorem.';
-      return;
-    }
+    try {
+      // Serwer sprawdza token i zwraca wyłącznie wynik tej jednej osoby.
+      const { data, error } = await _supabase.rpc('get_assignment', {
+        p_draw_id: drawId,
+        p_name: name,
+        p_token: token
+      });
 
-    // 2) Odczyt budżetu i linku do życzeń z draws
-    const { data: draw, error: drawError } = await _supabase
-      .from('draws')
-      .select('budget, wish_link')
-      .eq('id', assignment.draw_id)
-      .limit(1)
-      .maybeSingle();
-
-    if (drawError) {
-      console.error(drawError);
-      // budżet / link nie są krytyczne, więc nie przerywamy
-    }
-
-    resultEl.textContent = 'Kupujesz prezent dla: ' + assignment.receiver + ' 🎁';
-
-    if (draw) {
-      if (draw.budget && draw.budget.trim() !== '') {
-        budgetEl.textContent = 'Ustalony budżet na prezenty: ' + draw.budget;
+      if (error) {
+        console.error(error);
+        errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
+        return;
       }
 
-      if (draw.wish_link && draw.wish_link.trim() !== '') {
-        const safeUrl = draw.wish_link.trim();
-        // prosty opis – możesz zmienić tekst wedle uznania
-        wishEl.innerHTML = 'Lista życzeń: ' +
-          '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="color:#0f8b0f;">otwórz plik z życzeniami</a>';
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) {
+        errorEl.textContent = 'Nie znaleziono wyniku. Sprawdź, czy masz właściwy, kompletny link, albo skontaktuj się z organizatorem.';
+        return;
       }
-    }
 
-  } catch (e) {
-    console.error(e);
-    errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+      resultEl.textContent = 'Kupujesz prezent dla: ' + row.receiver + ' 🎁';
+
+      if (row.budget && row.budget.trim() !== '') {
+        budgetEl.textContent = 'Ustalony budżet na prezenty: ' + row.budget;
+      }
+
+      const wishUrl = row.wish_link ? safeHttpUrl(row.wish_link.trim()) : null;
+      if (wishUrl) {
+        wishEl.textContent = 'Lista życzeń: ';
+        const a = document.createElement('a');
+        a.href = wishUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.style.color = '#0f8b0f';
+        a.textContent = 'otwórz plik z życzeniami';
+        wishEl.appendChild(a);
+      }
+
+    } catch (e) {
+      console.error(e);
+      errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+    }
   }
-}
 
   showResult();
 </script>
