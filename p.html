@@ -2,148 +2,218 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>🎄 Secret Santa – Uczestnik 🎁</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#8b0000">
+  <title>🎁 Twoje losowanie Secret Santa</title>
+  <meta name="description" content="To Twój osobisty link. Otwórz go, żeby sprawdzić, komu kupujesz prezent.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="🎁 Twoje losowanie Secret Santa">
+  <meta property="og:description" content="To Twój osobisty link. Otwórz go, żeby sprawdzić, komu kupujesz prezent.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎁%3C/text%3E%3C/svg%3E">
   <style>
+    /* ===== Wspólne wartości (te same w index.html i p.html) ===== */
     :root {
-      --bg-main: #f3efe7;
-      --bg-card: #ffffff;
-      --accent-red: #8b0000;
-      --accent-green: #0f8b0f;
-      --text-main: #222222;
-      --text-muted: #777777;
-      --shadow-soft: 0 4px 16px rgba(0,0,0,0.12);
+      --red: #8b0000;
+      --red-2: #b22222;
+      --green: #0b6e0b;
+      --green-dark: #095a09;
+      --bg: #f4efe6;
+      --card: #ffffff;
+      --text: #222222;
+      --muted: #5f5f5f;
+      --line: #e3d8c3;
+      --field-border: #8a8272;
+      --err: #b00020;
+      --ok: #0b6e0b;
+      --radius: 12px;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      /* skala typografii: 13 / 16 / 20 / 36 */
+      --fs-sm: 13px;
+      --fs-md: 16px;
+      --fs-lg: 20px;
+      --fs-xl: 36px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
-      padding: 0;
-      background: var(--bg-main);
-      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: var(--fs-md);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    :focus-visible {
+      outline: 3px solid #1d4ed8;
+      outline-offset: 2px;
+    }
+
+    header.site {
+      background: linear-gradient(90deg, var(--red), var(--red-2));
+      color: #fff;
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+    }
+    header.site h1 {
+      margin: 0;
+      font-size: var(--fs-lg);
+      line-height: 1.3;
+    }
+    header.site p {
+      margin: 4px 0 0;
+      font-size: var(--fs-sm);
+      color: rgba(255, 255, 255, 0.92);
     }
 
     main {
       max-width: 520px;
       margin: 24px auto;
-      padding: 0 12px 24px;
+      padding: 0 16px 8px;
     }
 
     .card {
-      background: var(--bg-card);
-      border-radius: 12px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(139,0,0,0.25);
-      padding: 20px 18px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow);
+      padding: 28px 20px;
       text-align: center;
     }
 
-    h1 {
-      margin-top: 0;
-      margin-bottom: 6px;
-      font-size: 22px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+    .btn {
+      display: inline-flex;
       align-items: center;
-      color: var(--accent-red);
-    }
-
-    h1 span.emoji {
-      font-size: 24px;
-    }
-
-    .subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
-
-    #info {
-      font-size: 15px;
-      margin-bottom: 8px;
-    }
-
-    #result {
-      font-size: 18px;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 22px;
+      font: inherit;
       font-weight: 600;
-      color: var(--accent-green);
-      margin-top: 8px;
+      color: #fff;
+      background: var(--green);
+      border: 2px solid var(--green);
+      border-radius: 999px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn:hover { background: var(--green-dark); border-color: var(--green-dark); }
+    .btn-outline { color: var(--green); background: transparent; }
+    .btn-outline:hover { color: #fff; }
+    .btn-lg {
+      min-height: 56px;
+      padding: 12px 32px;
+      font-weight: 700;
+    }
+
+    /* ----- stany strony ----- */
+    #loading { margin: 0; color: var(--muted); }
+
+    #greeting {
+      margin: 0 0 4px;
+      font-size: var(--fs-lg);
+      font-weight: 700;
+    }
+
+    .gift {
+      display: block;
+      margin: 16px 0 20px;
+      font-size: 64px;
+      line-height: 1;
     }
 
     #error {
-      color: var(--accent-red);
-      font-size: 14px;
-      margin-top: 8px;
-      min-height: 18px;
+      margin: 0;
+      color: var(--err);
+      font-weight: 600;
+    }
+    #error:empty { display: none; }
+
+    /* ----- odsłonięty wynik: najważniejsza rzecz na stronie ----- */
+    #reveal:focus { outline: none; }
+    .reveal-label {
+      margin: 12px 0 4px;
+      color: var(--muted);
+    }
+    #receiverName {
+      margin: 0 0 20px;
+      font-size: var(--fs-xl);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--red);
+      overflow-wrap: anywhere;
+    }
+    .details {
+      padding-top: 20px;
+      border-top: 1px dashed var(--line);
+    }
+    #budgetInfo { margin: 0 0 16px; }
+    #wishLink { margin: 0; }
+    .secret {
+      margin: 20px 0 0;
+      font-size: var(--fs-sm);
+      color: var(--muted);
     }
 
-    .small {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 18px;
-      line-height: 1.4;
+    @media (prefers-reduced-motion: no-preference) {
+      #reveal:not([hidden]) #receiverName {
+        animation: pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+      }
+    }
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: none; }
     }
 
     footer {
       max-width: 520px;
-      margin: 0 auto 16px auto;
-      padding: 0 12px;
-      font-size: 11px;
-      color: var(--text-muted);
+      margin: 0 auto 16px;
+      padding: 0 16px;
+      font-size: var(--fs-sm);
+      color: var(--muted);
       text-align: center;
     }
-
-    footer a {
-      color: var(--accent-red);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
+    footer a { color: var(--red); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
 
     @media (min-width: 768px) {
-      main {
-        margin-top: 40px;
-      }
-      h1 {
-        font-size: 24px;
-      }
-      #result {
-        font-size: 20px;
-      }
+      main { margin-top: 40px; }
     }
   </style>
 </head>
 <body>
+  <header class="site">
+    <h1><span aria-hidden="true">🎄</span> Secret Santa <span aria-hidden="true">🎁</span></h1>
+    <p>Osobisty link do losowania prezentów.</p>
+  </header>
+
   <main>
     <div class="card">
-      <h1>
-        <span class="emoji">🎄</span>
-        Secret Santa
-        <span class="emoji">🎁</span>
-      </h1>
-      <p class="subtitle">
-        Otworzyłeś osobisty link do losowania prezentów. Sprawdź, komu kupujesz prezent!
-      </p>
+      <p id="loading" role="status">Wczytuję…</p>
 
-      <p id="info"></p>
-      <p id="result"></p>
-      <p id="budgetInfo" class="small"></p>
-      <p id="wishInfo" class="small"></p>
-      <p id="error"></p>
+      <p id="greeting" hidden></p>
 
-      <p class="small">
-        Jeśli coś wygląda nie tak (np. błąd lub puste dane), skontaktuj się z organizatorem losowania.
-      </p>
+      <div id="gate" hidden>
+        <span class="gift" aria-hidden="true">🎁</span>
+        <button type="button" class="btn btn-lg" id="revealBtn">Pokaż mój wynik</button>
+      </div>
+
+      <div id="reveal" tabindex="-1" hidden>
+        <p class="reveal-label">Kupujesz prezent dla:</p>
+        <p id="receiverName"></p>
+        <div class="details" id="details" hidden>
+          <p id="budgetInfo" hidden></p>
+          <a id="wishLink" class="btn btn-outline" target="_blank" rel="noopener noreferrer" hidden>Otwórz listę życzeń</a>
+        </div>
+        <p class="secret">Zachowaj to w tajemnicy 🤫</p>
+      </div>
+
+      <p id="error" role="alert"></p>
     </div>
   </main>
 
@@ -152,17 +222,19 @@
     <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@TGNine1</a>
   </footer>
 
-  <!-- Supabase JS client -->
+  <!-- Supabase JS client (wersja przypięta) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <script>
   // === KONFIGURACJA SUPABASE ===
   // Klucz "anon" jest publiczny z założenia. Bezpieczeństwo zapewniają reguły w bazie
   // (patrz supabase-setup.sql): wynik zwraca funkcja get_assignment tylko przy poprawnym tokenie.
-  const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";            // <-- zostaw / podmień na swój
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU"; // <-- zostaw / podmień na swój
+  const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU";
 
   const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const $ = (id) => document.getElementById(id);
 
   function getQueryParam(name) {
     const params = new URLSearchParams(window.location.search);
@@ -179,29 +251,24 @@
     }
   }
 
-  async function showResult() {
-    const infoEl = document.getElementById('info');
-    const resultEl = document.getElementById('result');
-    const errorEl = document.getElementById('error');
-    const budgetEl = document.getElementById('budgetInfo');
-    const wishEl = document.getElementById('wishInfo');
+  let result = null;
 
-    errorEl.textContent = '';
-    resultEl.textContent = '';
-    infoEl.textContent = '';
-    budgetEl.textContent = '';
-    wishEl.textContent = '';
+  function showError(message) {
+    $('loading').hidden = true;
+    $('greeting').hidden = true;
+    $('gate').hidden = true;
+    $('error').textContent = message;
+  }
 
+  async function loadResult() {
     const drawId = getQueryParam('drawId');
     const name = getQueryParam('name');
     const token = getQueryParam('token');
 
     if (!drawId || !name || !token) {
-      errorEl.textContent = 'Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.';
+      showError('Brak wymaganych parametrów w linku. Skontaktuj się z organizatorem.');
       return;
     }
-
-    infoEl.textContent = `Cześć, ${name}!`;
 
     try {
       // Serwer sprawdza token i zwraca wyłącznie wynik tej jednej osoby.
@@ -213,41 +280,64 @@
 
       if (error) {
         console.error(error);
-        errorEl.textContent = 'Błąd podczas wczytywania wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.';
+        showError('Nie udało się wczytać wyniku. Spróbuj ponownie albo skontaktuj się z organizatorem.');
         return;
       }
 
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) {
-        errorEl.textContent = 'Nie znaleziono wyniku. Sprawdź, czy masz właściwy, kompletny link, albo skontaktuj się z organizatorem.';
+        showError('Nie znaleziono wyniku. Sprawdź, czy masz właściwy, kompletny link, albo skontaktuj się z organizatorem.');
         return;
       }
 
-      resultEl.textContent = 'Kupujesz prezent dla: ' + row.receiver + ' 🎁';
-
-      if (row.budget && row.budget.trim() !== '') {
-        budgetEl.textContent = 'Ustalony budżet na prezenty: ' + row.budget;
-      }
-
-      const wishUrl = row.wish_link ? safeHttpUrl(row.wish_link.trim()) : null;
-      if (wishUrl) {
-        wishEl.textContent = 'Lista życzeń: ';
-        const a = document.createElement('a');
-        a.href = wishUrl;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.style.color = '#0f8b0f';
-        a.textContent = 'otwórz plik z życzeniami';
-        wishEl.appendChild(a);
-      }
+      result = row;
+      $('loading').hidden = true;
+      $('greeting').textContent = 'Cześć, ' + name + '!';
+      $('greeting').hidden = false;
+      $('gate').hidden = false;
 
     } catch (e) {
       console.error(e);
-      errorEl.textContent = 'Nieoczekiwany błąd. Spróbuj ponownie później.';
+      showError('Nieoczekiwany błąd. Spróbuj ponownie później.');
     }
   }
 
-  showResult();
+  function reveal() {
+    if (!result) return;
+
+    $('receiverName').textContent = result.receiver;
+
+    let hasDetails = false;
+
+    if (result.budget && result.budget.trim() !== '') {
+      const budgetEl = $('budgetInfo');
+      budgetEl.textContent = '';
+      budgetEl.append('Budżet na prezenty: ');
+      const strong = document.createElement('strong');
+      strong.textContent = result.budget.trim();
+      budgetEl.appendChild(strong);
+      budgetEl.hidden = false;
+      hasDetails = true;
+    }
+
+    const wishUrl = result.wish_link ? safeHttpUrl(result.wish_link.trim()) : null;
+    if (wishUrl) {
+      const a = $('wishLink');
+      a.href = wishUrl;
+      a.hidden = false;
+      hasDetails = true;
+    }
+
+    $('details').hidden = !hasDetails;
+    $('gate').hidden = true;
+
+    const box = $('reveal');
+    box.hidden = false;
+    box.focus({ preventScroll: true }); // czytniki ekranu odczytają wynik
+  }
+
+  $('revealBtn').addEventListener('click', reveal);
+  loadResult();
 </script>
 </body>
 </html>

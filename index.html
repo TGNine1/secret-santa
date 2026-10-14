@@ -2,229 +2,254 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#8b0000">
   <title>🎄 Secret Santa – Organizator 🎁</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎄%3C/text%3E%3C/svg%3E">
   <style>
+    /* ===== Wspólne wartości (te same w index.html i p.html) ===== */
+    :root {
+      --red: #8b0000;
+      --red-2: #b22222;
+      --green: #0b6e0b;
+      --green-dark: #095a09;
+      --bg: #f4efe6;
+      --card: #ffffff;
+      --text: #222222;
+      --muted: #5f5f5f;
+      --line: #e3d8c3;
+      --field-border: #8a8272;
+      --err: #b00020;
+      --ok: #0b6e0b;
+      --radius: 12px;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      /* skala typografii: 13 / 16 / 20 / 36 */
+      --fs-sm: 13px;
+      --fs-md: 16px;
+      --fs-lg: 20px;
+      --fs-xl: 36px;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
     body {
+      margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f5f0e6, #f8f3ea);
-      color: #222;
+      font-size: var(--fs-md);
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
     }
-    header {
-      background: linear-gradient(90deg, #8b0000, #b22222);
+
+    :focus-visible {
+      outline: 3px solid #1d4ed8;
+      outline-offset: 2px;
+    }
+
+    header.site {
+      background: linear-gradient(90deg, var(--red), var(--red-2));
       color: #fff;
-      padding: 16px 24px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
     }
-    header h1 {
+    header.site h1 {
       margin: 0;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-size: var(--fs-lg);
+      line-height: 1.3;
     }
-    header h1 span.emoji {
-      font-size: 26px;
+    header.site p {
+      margin: 4px 0 0;
+      font-size: var(--fs-sm);
+      color: rgba(255, 255, 255, 0.92);
     }
-    header p {
-      margin: 4px 0 0 0;
-      font-size: 13px;
-      opacity: 0.9;
-    }
+
     main {
-      max-width: 900px;
+      max-width: 720px;
       margin: 24px auto;
-      padding: 0 16px 24px;
+      padding: 0 16px 8px;
     }
-    .box {
-      border-radius: 8px;
-      background: #ffffff;
-      padding: 16px 18px;
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: var(--shadow);
+      padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border: 1px solid rgba(0,0,0,0.04);
     }
-    .box h2 {
-      margin: 0 0 8px 0;
-      font-size: 18px;
-      color: #8b0000;
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: var(--fs-lg);
+      line-height: 1.25;
+      color: var(--red);
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .box h2 span.emoji {
-      font-size: 18px;
+
+    .intro { margin: 0 0 8px; }
+    .hint {
+      margin: 2px 0 6px;
+      font-size: var(--fs-sm);
+      color: var(--muted);
     }
-    .small {
-      font-size: 13px;
-      color: #555;
-      margin-top: 4px;
-      margin-bottom: 0;
-    }
+
     label {
-      font-weight: 600;
       display: block;
-      margin-top: 10px;
-      margin-bottom: 4px;
-      font-size: 14px;
-    }
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      padding: 8px;
-      font-family: inherit;
-      font-size: 14px;
-      resize: vertical;
-      min-height: 80px;
-    }
-    input[type="text"] {
-      width: 100%;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      padding: 8px;
-      font-family: inherit;
-      font-size: 14px;
-    }
-    button {
-      margin-top: 12px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: none;
-      background: linear-gradient(135deg, #0f8b0f, #1fa21f);
-      color: #fff;
+      margin-top: 18px;
       font-weight: 600;
+    }
+
+    input, textarea {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      padding: 10px 12px;
+      font: inherit; /* 16px, dzięki czemu iPhone nie powiększa strony po kliknięciu pola */
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--field-border);
+      border-radius: 8px;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 22px;
+      font: inherit;
+      font-weight: 600;
+      color: #fff;
+      background: var(--green);
+      border: 2px solid var(--green);
+      border-radius: 999px;
       cursor: pointer;
-      font-size: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.2s ease;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
     }
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-      background: linear-gradient(135deg, #0c740c, #1b8a1b);
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-      box-shadow: none;
-      transform: none;
-    }
+    .btn:hover { background: var(--green-dark); border-color: var(--green-dark); }
+    .btn:disabled { opacity: 0.6; cursor: default; }
+    .btn-outline { color: var(--green); background: transparent; }
+    .btn-outline:hover { color: #fff; }
+    .btn-sm { min-height: 40px; padding: 6px 16px; }
+
+    #generateBtn { margin-top: 22px; }
+
     .status {
-      font-size: 13px;
-      margin-top: 8px;
-      min-height: 18px;
+      min-height: 24px;
+      margin: 12px 0 0;
     }
-    .status.ok {
-      color: #0f7a0f;
+    .status.ok { color: var(--ok); font-weight: 600; }
+    .status.err { color: var(--err); font-weight: 600; }
+
+    .callout {
+      margin: 12px 0 16px;
+      padding: 10px 14px;
+      background: #fdf1e3;
+      border-left: 4px solid var(--red);
+      border-radius: 0 8px 8px 0;
     }
-    .status.err {
-      color: #b00020;
-    }
-    #linksOutput {
-      font-size: 13px;
-    }
+
     .link-row {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px dashed #e0d2ba;
+      padding: 12px 0;
+      border-bottom: 1px dashed var(--line);
     }
     .link-row-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
-      font-size: 14px;
+      gap: 12px;
+      margin-bottom: 6px;
     }
-    .link-row-name {
-      font-weight: 600;
-    }
+    .link-row-name { font-weight: 600; }
     .link-row-url {
-      font-size: 13px;
+      padding: 8px 10px;
+      font-size: var(--fs-sm);
       word-break: break-all;
       background: #f7f2ea;
-      border-radius: 4px;
-      padding: 4px 6px;
+      border-radius: 8px;
+      user-select: all;
     }
-    .copy-btn {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: none;
-      background: #0f8b0f;
-      color: #fff;
-      font-size: 12px;
-      cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+
+    footer {
+      max-width: 720px;
+      margin: 0 auto 16px;
+      padding: 0 16px;
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      text-align: right;
     }
-    .copy-btn:hover {
-      background: #0c740c;
-    }
-    .copy-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 0 1px rgba(0,0,0,0.2);
-    }
+    footer a { color: var(--red); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>
-      <span class="emoji">🎄</span>
-      Secret Santa – Organizator
-      <span class="emoji">🎁</span>
-    </h1>
+  <header class="site">
+    <h1><span aria-hidden="true">🎄</span> Secret Santa – Organizator <span aria-hidden="true">🎁</span></h1>
     <p>Losowanie z wykluczeniami i osobistymi linkami dla uczestników.</p>
   </header>
 
   <main>
-    <div class="box">
-      <h2><span class="emoji">🧩</span>Krok 1: konfiguracja losowania</h2>
-      <p class="small">
+    <section class="card" aria-labelledby="step1">
+      <h2 id="step1"><span aria-hidden="true">🧩</span> Krok 1: konfiguracja losowania</h2>
+      <p class="intro">
         Wpisz nazwę losowania, uczestników oraz wykluczenia.
         Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁
       </p>
 
-      <label>Nazwa losowania:</label>
-      <input type="text" id="drawSlug" placeholder="np. Superaki 2025">
+      <label for="drawSlug">Nazwa losowania</label>
+      <p class="hint" id="slugHint">Tylko dla Ciebie, uczestnicy jej nie zobaczą.</p>
+      <input type="text" id="drawSlug" autocomplete="off" aria-describedby="slugHint" placeholder="np. Superaki 2025">
 
-      <label>Lista osób (po jednej w linii):</label>
-      <textarea id="people" rows="8" placeholder="Wpisz imiona, po jednym w linii"></textarea>
+      <label for="people">Lista osób</label>
+      <p class="hint" id="peopleHint">Po jednej w linii. Imiona muszą się różnić (np. „Ania K.” i „Ania M.”).</p>
+      <textarea id="people" rows="8" aria-describedby="peopleHint" placeholder="Wpisz imiona, po jednym w linii"></textarea>
 
-      <label>Wykluczenia (opcjonalnie - wskaż w osobnych liniach osoby które nie mogą się wylosować):</label>
-      <textarea id="constraints" rows="4" placeholder="Ania: Tomasz&#10;Tomasz: Ania"></textarea>
-
-      <label>Budżet na prezenty (opcjonalnie):</label>
-      <input type="text" id="budget" placeholder="np. 100 zł">
-
-      <label>Link do listy życzeń (opcjonalnie):</label>
-      <input type="text" id="wishLink" placeholder="Link do Google Documents, OneDrive itp.">
-
-      <button id="generateBtn" onclick="generateAndSave()">🎅 Losuj </button>
-
-      <p id="status" class="status"></p>
-    </div>
-
-    <div class="box">
-      <h2><span class="emoji">📨</span>Krok 2: linki dla uczestników</h2>
-      <p class="small">
-        Skopiuj tę listę i wyślij każdemu <b>tylko jego link</b> (np. SMS-em, mailem albo na Messengerze).
-        Każdy link to indywidualna świąteczna niespodzianka 🎁
+      <label for="constraints">Wykluczenia (opcjonalnie)</label>
+      <p class="hint" id="constraintsHint">
+        Format: „Imię: osoby, których nie może wylosować” (po przecinku). Np. „Ania: Tomasz, Basia” oznacza,
+        że Ania nie wylosuje Tomasza ani Basi. Wykluczenie działa w jedną stronę, więc drugą dopisz osobną linią.
       </p>
-      <div id="linksOutput"></div>
-    </div>
-  </main>
-    <footer style="max-width:900px;margin:0 auto 16px auto;padding:0 16px;font-size:12px;color:#777;text-align:right;">
-    Stworzone na użytek prywatny przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener" style="color:#8b0000;text-decoration:none;">@TGNine1</a>
-    </footer>
+      <textarea id="constraints" rows="4" aria-describedby="constraintsHint" placeholder="Ania: Tomasz, Basia&#10;Tomasz: Ania"></textarea>
 
-<!-- Supabase JS client (z CDN) -->
-<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+      <label for="budget">Budżet na prezenty (opcjonalnie)</label>
+      <input type="text" id="budget" autocomplete="off" placeholder="np. 100 zł">
+
+      <label for="wishLink">Link do listy życzeń (opcjonalnie)</label>
+      <p class="hint" id="wishHint">Musi zaczynać się od https://</p>
+      <input type="url" inputmode="url" id="wishLink" autocomplete="off" aria-describedby="wishHint" placeholder="Link do Google Documents, OneDrive itp.">
+
+      <button type="button" class="btn" id="generateBtn"><span aria-hidden="true">🎅</span> <span id="generateLabel">Losuj</span></button>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" id="linksBox" aria-labelledby="step2" hidden>
+      <h2 id="step2"><span aria-hidden="true">📨</span> Krok 2: linki dla uczestników</h2>
+      <p class="intro">
+        Wyślij każdemu <strong>tylko jego link</strong> (SMS, mail, Messenger).
+        Nie otwieraj cudzych linków: kto otworzy link, zobaczy wynik tej osoby.
+      </p>
+      <p class="callout" role="note">
+        Linki widać tylko teraz. Po zamknięciu lub odświeżeniu strony nie da się ich odzyskać, więc skopiuj je od razu.
+      </p>
+      <button type="button" class="btn btn-outline" id="copyAllBtn">Kopiuj wszystkie linki</button>
+      <p class="hint">„Kopiuj wszystkie” wkleja do schowka listę „imię: link”. Zapisz ją w notatniku, a potem rozsyłaj linki pojedynczo.</p>
+      <div id="linksOutput"></div>
+    </section>
+  </main>
+
+  <footer>
+    Stworzone na użytek prywatny przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@TGNine1</a>
+  </footer>
+
+  <!-- Supabase JS client (wersja przypięta) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <script>
 // === KONFIGURACJA SUPABASE ===
@@ -237,6 +262,9 @@ const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Adres strony uczestnika liczony względem tej strony - działa na każdym hostingu.
 const PARTICIPANT_URL = new URL('p.html', window.location.href).toString();
+
+const $ = (id) => document.getElementById(id);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // === LOGIKA LOSOWANIA ===
 function parsePeople(text) {
@@ -291,74 +319,64 @@ function drawSecretSanta(people, constraints, maxTries = 10000) {
   return null;
 }
 
-function generateToken(length = 12) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  let token = '';
-  for (let i = 0; i < length; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
+// === STAN STRONY ===
+let currentLinks = [];
+const copiedNames = new Set();
+let linksNotCopied = false;
+
+function setStatus(text, kind) {
+  const el = $('status');
+  el.textContent = text;
+  el.className = 'status' + (kind ? ' ' + kind : '');
 }
 
 // === GŁÓWNA FUNKCJA ===
 async function generateAndSave() {
-  const statusEl = document.getElementById('status');
-  const linksOutput = document.getElementById('linksOutput');
-  const btn = document.getElementById('generateBtn');
+  const btn = $('generateBtn');
+  const label = $('generateLabel');
 
-  statusEl.textContent = '';
-  statusEl.className = 'status';
-  linksOutput.innerHTML = '';
+  setStatus('', '');
+  $('linksBox').hidden = true;
+  $('linksOutput').innerHTML = '';
+  currentLinks = [];
+  copiedNames.clear();
+  linksNotCopied = false;
+
   btn.disabled = true;
-
-  const drawSlug = document.getElementById('drawSlug').value.trim();
-  const budget = document.getElementById('budget').value.trim();
-  const wishLink = document.getElementById('wishLink').value.trim();
-  const peopleText = document.getElementById('people').value;
-  const constraintsText = document.getElementById('constraints').value;
-
-  if (!drawSlug) {
-    statusEl.textContent = 'Podaj nazwę losowania (slug).';
-    statusEl.classList.add('err');
-    btn.disabled = false;
-    return;
-  }
-
-  const people = parsePeople(peopleText);
-  if (people.length < 2) {
-    statusEl.textContent = 'Potrzeba co najmniej 2 osób.';
-    statusEl.classList.add('err');
-    btn.disabled = false;
-    return;
-  }
-
-  if (new Set(people).size !== people.length) {
-    statusEl.textContent = 'Na liście są powtórzone imiona. Każda osoba musi mieć unikalne imię.';
-    statusEl.classList.add('err');
-    btn.disabled = false;
-    return;
-  }
-
-  if (wishLink && !/^https?:\/\//i.test(wishLink)) {
-    statusEl.textContent = 'Link do listy życzeń musi zaczynać się od http:// lub https://';
-    statusEl.classList.add('err');
-    btn.disabled = false;
-    return;
-  }
-
-  const constraints = parseConstraints(constraintsText);
-  const assignment = drawSecretSanta(people, constraints);
-  if (!assignment) {
-    statusEl.textContent = 'Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.';
-    statusEl.classList.add('err');
-    btn.disabled = false;
-    return;
-  }
-
-  statusEl.textContent = 'Losowanie zakończone, zapisuję w chmurze...';
-  statusEl.classList.add('small');
+  label.textContent = 'Losuję…';
 
   try {
+    const drawSlug = $('drawSlug').value.trim();
+    const budget = $('budget').value.trim();
+    const wishLink = $('wishLink').value.trim();
+    const people = parsePeople($('people').value);
+
+    if (!drawSlug) {
+      setStatus('Podaj nazwę losowania.', 'err');
+      return;
+    }
+    if (people.length < 2) {
+      setStatus('Potrzeba co najmniej 2 osób.', 'err');
+      return;
+    }
+    if (new Set(people).size !== people.length) {
+      setStatus('Na liście są powtórzone imiona. Każda osoba musi mieć unikalne imię.', 'err');
+      return;
+    }
+    if (wishLink && !/^https?:\/\//i.test(wishLink)) {
+      setStatus('Link do listy życzeń musi zaczynać się od http:// lub https://', 'err');
+      return;
+    }
+
+    const constraints = parseConstraints($('constraints').value);
+    const assignment = drawSecretSanta(people, constraints);
+    if (!assignment) {
+      setStatus('Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.', 'err');
+      return;
+    }
+
+    setStatus('Losowanie zakończone, zapisuję w chmurze…', '');
+
     // Wszystko zapisuje jedna funkcja w bazie (create_draw): atomowo, a tokeny
     // generuje serwer. Przeglądarka nie ma bezpośredniego dostępu do tabel.
     const pairs = people.map(p => ({ giver: p, receiver: assignment[p] }));
@@ -374,11 +392,10 @@ async function generateAndSave() {
       console.error(error);
       const msg = error.message || '';
       if (msg.includes('slug_taken')) {
-        statusEl.textContent = 'Losowanie o takiej nazwie już istnieje. Wybierz inną nazwę.';
+        setStatus('Losowanie o takiej nazwie już istnieje. Wybierz inną nazwę.', 'err');
       } else {
-        statusEl.textContent = 'Błąd przy zapisie losowania.';
+        setStatus('Błąd przy zapisie losowania.', 'err');
       }
-      statusEl.classList.add('err');
       return;
     }
 
@@ -391,21 +408,26 @@ async function generateAndSave() {
     });
     links.sort((a, b) => people.indexOf(a.name) - people.indexOf(b.name));
 
-    statusEl.textContent = 'Gotowe! Losowanie zakończone. Wyślij linki uczestnikom 🎁';
-    statusEl.classList.add('ok');
+    currentLinks = links;
+    linksNotCopied = links.length > 0;
+
+    setStatus('Gotowe! Losowanie zakończone. Wyślij linki uczestnikom 🎁', 'ok');
     renderLinks(links);
+    $('linksBox').hidden = false;
+    $('linksBox').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
 
   } catch (e) {
     console.error(e);
-    statusEl.textContent = 'Nieoczekiwany błąd.';
-    statusEl.classList.add('err');
+    setStatus('Nieoczekiwany błąd.', 'err');
   } finally {
     btn.disabled = false;
+    label.textContent = 'Losuj';
   }
 }
 
+// === LINKI I KOPIOWANIE ===
 function renderLinks(links) {
-  const container = document.getElementById('linksOutput');
+  const container = $('linksOutput');
   container.innerHTML = '';
 
   if (!links || links.length === 0) {
@@ -425,9 +447,15 @@ function renderLinks(links) {
     nameSpan.textContent = item.name;
 
     const btn = document.createElement('button');
-    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.className = 'btn btn-sm';
     btn.textContent = 'Kopiuj';
-    btn.addEventListener('click', () => copyToClipboard(item.url, btn));
+    btn.setAttribute('aria-label', 'Kopiuj link dla: ' + item.name);
+    btn.addEventListener('click', async () => {
+      if (await copyToClipboard(item.url, btn, 'Skopiowano! 🎁')) {
+        markCopied([item.name]);
+      }
+    });
 
     header.appendChild(nameSpan);
     header.appendChild(btn);
@@ -442,24 +470,51 @@ function renderLinks(links) {
   });
 }
 
-async function copyToClipboard(text, btn) {
+function markCopied(names) {
+  names.forEach(n => copiedNames.add(n));
+  if (currentLinks.every(l => copiedNames.has(l.name))) {
+    linksNotCopied = false;
+  }
+}
+
+async function copyToClipboard(text, btn, doneLabel) {
+  const original = btn.dataset.label || btn.textContent;
+  btn.dataset.label = original;
   try {
     await navigator.clipboard.writeText(text);
-    const original = btn.textContent;
-    btn.textContent = 'Skopiowano! 🎁';
+    btn.textContent = doneLabel;
     btn.disabled = true;
     setTimeout(() => {
       btn.textContent = original;
       btn.disabled = false;
     }, 1500);
+    return true;
   } catch (e) {
     console.error('Clipboard error', e);
-    btn.textContent = 'Błąd kopiowania';
-    setTimeout(() => {
-      btn.textContent = 'Kopiuj';
-    }, 1500);
+    btn.textContent = 'Nie udało się skopiować';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+    return false;
   }
 }
+
+async function copyAllLinks() {
+  if (currentLinks.length === 0) return;
+  const text = currentLinks.map(l => l.name + ': ' + l.url).join('\n');
+  if (await copyToClipboard(text, $('copyAllBtn'), 'Skopiowano wszystko 🎁')) {
+    markCopied(currentLinks.map(l => l.name));
+  }
+}
+
+// Ostrzeżenie przed zamknięciem strony, dopóki linki nie zostały skopiowane
+window.addEventListener('beforeunload', (e) => {
+  if (linksNotCopied) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+$('generateBtn').addEventListener('click', generateAndSave);
+$('copyAllBtn').addEventListener('click', copyAllLinks);
 </script>
 </body>
 </html>
