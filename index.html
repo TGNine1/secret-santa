@@ -8,7 +8,7 @@
   <title>🎄 Secret Santa – Organizator 🎁</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎄%3C/text%3E%3C/svg%3E">
   <style>
-    /* ===== Wspólne wartości (te same w index.html i p.html) ===== */
+    /* ===== Wspólne wartości / Shared values (te same w index.html i p.html) ===== */
     :root {
       --red: #8b0000;
       --red-2: #b22222;
@@ -24,7 +24,7 @@
       --ok: #0b6e0b;
       --radius: 12px;
       --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      /* skala typografii: 13 / 16 / 20 / 36 */
+      /* type scale: 13 / 16 / 20 / 36 */
       --fs-sm: 13px;
       --fs-md: 16px;
       --fs-lg: 20px;
@@ -51,8 +51,16 @@
     header.site {
       background: linear-gradient(90deg, var(--red), var(--red-2));
       color: #fff;
-      padding: 16px 20px;
+      padding: 16px;
       box-shadow: var(--shadow);
+    }
+    .site-inner {
+      max-width: 688px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
     }
     header.site h1 {
       margin: 0;
@@ -64,6 +72,30 @@
       font-size: var(--fs-sm);
       color: rgba(255, 255, 255, 0.92);
     }
+
+    /* PL | EN switch */
+    .lang-switch {
+      display: flex;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 999px;
+    }
+    .lang-btn {
+      min-width: 44px;
+      min-height: 36px;
+      padding: 4px 12px;
+      font: inherit;
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      color: #fff;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+    .lang-btn:first-child { border-radius: 999px 0 0 999px; }
+    .lang-btn:last-child { border-radius: 0 999px 999px 0; }
+    .lang-btn[aria-pressed="true"] { color: var(--red); background: #fff; }
+    .lang-btn:focus-visible { outline: 3px solid #ffd54a; outline-offset: 2px; }
 
     main {
       max-width: 720px;
@@ -102,12 +134,12 @@
       font-weight: 600;
     }
 
-    input, textarea {
+    input, textarea, select {
       display: block;
       width: 100%;
       margin-top: 4px;
       padding: 10px 12px;
-      font: inherit; /* 16px, dzięki czemu iPhone nie powiększa strony po kliknięciu pola */
+      font: inherit; /* 16px: iPhone does not zoom in when a field is tapped */
       color: var(--text);
       background: #fff;
       border: 1px solid var(--field-border);
@@ -190,71 +222,88 @@
 </head>
 <body>
   <header class="site">
-    <h1><span aria-hidden="true">🎄</span> Secret Santa – Organizator <span aria-hidden="true">🎁</span></h1>
-    <p>Losowanie z wykluczeniami i osobistymi linkami dla uczestników.</p>
+    <div class="site-inner">
+      <div>
+        <h1><span aria-hidden="true">🎄</span> <span data-i18n="h1">Secret Santa – Organizator</span> <span aria-hidden="true">🎁</span></h1>
+        <p data-i18n="subtitle">Losowanie z wykluczeniami i osobistymi linkami dla uczestników.</p>
+      </div>
+      <div class="lang-switch" role="group" aria-label="Język / Language">
+        <button type="button" class="lang-btn" data-lang="pl" lang="pl" aria-pressed="true">PL</button>
+        <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
   </header>
 
   <main>
     <section class="card" aria-labelledby="step1">
-      <h2 id="step1"><span aria-hidden="true">🧩</span> Krok 1: konfiguracja losowania</h2>
-      <p class="intro">
+      <h2 id="step1"><span aria-hidden="true">🧩</span> <span data-i18n="step1">Krok 1: konfiguracja losowania</span></h2>
+      <p class="intro" data-i18n="intro1">
         Wpisz nazwę losowania, uczestników oraz wykluczenia.
         Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁
       </p>
 
-      <label for="drawSlug">Nazwa losowania</label>
-      <p class="hint" id="slugHint">Tylko dla Ciebie, uczestnicy jej nie zobaczą.</p>
-      <input type="text" id="drawSlug" autocomplete="off" aria-describedby="slugHint" placeholder="np. Superaki 2025">
+      <label for="drawSlug" data-i18n="slugLabel">Nazwa losowania</label>
+      <p class="hint" id="slugHint" data-i18n="slugHint">Tylko dla Ciebie, uczestnicy jej nie zobaczą.</p>
+      <input type="text" id="drawSlug" autocomplete="off" aria-describedby="slugHint" data-i18n-placeholder="slugPh" placeholder="np. Superaki 2025">
 
-      <label for="people">Lista osób</label>
-      <p class="hint" id="peopleHint">Po jednej w linii. Imiona muszą się różnić (np. „Ania K.” i „Ania M.”).</p>
-      <textarea id="people" rows="8" aria-describedby="peopleHint" placeholder="Wpisz imiona, po jednym w linii"></textarea>
+      <label for="people" data-i18n="peopleLabel">Lista osób</label>
+      <p class="hint" id="peopleHint" data-i18n="peopleHint">Po jednej w linii. Imiona muszą się różnić (np. „Ania K.” i „Ania M.”).</p>
+      <textarea id="people" rows="8" aria-describedby="peopleHint" data-i18n-placeholder="peoplePh" placeholder="Wpisz imiona, po jednym w linii"></textarea>
 
-      <label for="constraints">Wykluczenia (opcjonalnie)</label>
-      <p class="hint" id="constraintsHint">
+      <label for="constraints" data-i18n="consLabel">Wykluczenia (opcjonalnie)</label>
+      <p class="hint" id="constraintsHint" data-i18n="consHint">
         Format: „Imię: osoby, których nie może wylosować” (po przecinku). Np. „Ania: Tomasz, Basia” oznacza,
         że Ania nie wylosuje Tomasza ani Basi. Wykluczenie działa w jedną stronę, więc drugą dopisz osobną linią.
       </p>
-      <textarea id="constraints" rows="4" aria-describedby="constraintsHint" placeholder="Ania: Tomasz, Basia&#10;Tomasz: Ania"></textarea>
+      <textarea id="constraints" rows="4" aria-describedby="constraintsHint" data-i18n-placeholder="consPh" placeholder="Ania: Tomasz, Basia&#10;Tomasz: Ania"></textarea>
 
-      <label for="budget">Budżet na prezenty (opcjonalnie)</label>
-      <input type="text" id="budget" autocomplete="off" placeholder="np. 100 zł">
+      <label for="budget" data-i18n="budgetLabel">Budżet na prezenty (opcjonalnie)</label>
+      <input type="text" id="budget" autocomplete="off" data-i18n-placeholder="budgetPh" placeholder="np. 100 zł">
 
-      <label for="wishLink">Link do listy życzeń (opcjonalnie)</label>
-      <p class="hint" id="wishHint">Musi zaczynać się od https://</p>
-      <input type="url" inputmode="url" id="wishLink" autocomplete="off" aria-describedby="wishHint" placeholder="Link do Google Documents, OneDrive itp.">
+      <label for="wishLink" data-i18n="wishLabel">Link do listy życzeń (opcjonalnie)</label>
+      <p class="hint" id="wishHint" data-i18n="wishHint">Musi zaczynać się od https://</p>
+      <input type="url" inputmode="url" id="wishLink" autocomplete="off" aria-describedby="wishHint" data-i18n-placeholder="wishPh" placeholder="Link do Google Documents, OneDrive itp.">
 
-      <button type="button" class="btn" id="generateBtn"><span aria-hidden="true">🎅</span> <span id="generateLabel">Losuj</span></button>
+      <label for="drawLang" data-i18n="langLabel">Język stron uczestników</label>
+      <p class="hint" id="langHint" data-i18n="langHint">W tym języku uczestnicy zobaczą swój wynik.</p>
+      <select id="drawLang" aria-describedby="langHint">
+        <option value="pl">Polski</option>
+        <option value="en">English</option>
+      </select>
+
+      <button type="button" class="btn" id="generateBtn"><span aria-hidden="true">🎅</span> <span id="generateLabel" data-i18n="draw">Losuj</span></button>
 
       <p id="status" class="status" role="status" aria-live="polite"></p>
     </section>
 
     <section class="card" id="linksBox" aria-labelledby="step2" hidden>
-      <h2 id="step2"><span aria-hidden="true">📨</span> Krok 2: linki dla uczestników</h2>
-      <p class="intro">
+      <h2 id="step2"><span aria-hidden="true">📨</span> <span data-i18n="step2">Krok 2: linki dla uczestników</span></h2>
+      <p class="intro" data-i18n-html="step2Intro">
         Wyślij każdemu <strong>tylko jego link</strong> (SMS, mail, Messenger).
         Nie otwieraj cudzych linków: kto otworzy link, zobaczy wynik tej osoby.
       </p>
-      <p class="callout" role="note">
+      <p class="callout" role="note" data-i18n="callout">
         Linki widać tylko teraz. Po zamknięciu lub odświeżeniu strony nie da się ich odzyskać, więc skopiuj je od razu.
       </p>
-      <button type="button" class="btn btn-outline" id="copyAllBtn">Kopiuj wszystkie linki</button>
-      <p class="hint">„Kopiuj wszystkie” wkleja do schowka listę „imię: link”. Zapisz ją w notatniku, a potem rozsyłaj linki pojedynczo.</p>
+      <button type="button" class="btn btn-outline" id="copyAllBtn" data-i18n="copyAll">Kopiuj wszystkie linki</button>
+      <p class="hint" data-i18n="copyAllHint">„Kopiuj wszystkie” wkleja do schowka listę „imię: link”. Zapisz ją w notatniku, a potem rozsyłaj linki pojedynczo.</p>
       <div id="linksOutput"></div>
     </section>
   </main>
 
   <footer>
-    Stworzone na użytek prywatny przez <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@TGNine1</a>
+    <span data-i18n="footer">Stworzone na użytek prywatny przez</span> <a href="https://github.com/tgnine1" target="_blank" rel="noopener">@TGNine1</a>
   </footer>
 
-  <!-- Supabase JS client (wersja przypięta) -->
+  <!-- Supabase JS client (wersja przypięta / pinned version) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <script>
-// === KONFIGURACJA SUPABASE ===
+// === KONFIGURACJA SUPABASE / SUPABASE CONFIG ===
 // Klucz "anon" jest publiczny z założenia. Bezpieczeństwo zapewniają reguły w bazie
 // (patrz supabase-setup.sql): przeglądarka nie czyta tabel, tylko wywołuje funkcje.
+// The "anon" key is public by design. Security comes from the database rules
+// (see supabase-setup.sql): the browser cannot read tables, it only calls functions.
 const SUPABASE_URL = "https://xlvrqqcaaopvtsxxdymt.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsdnJxcWNhYW9wdnRzeHhkeW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzNjQ4MzIsImV4cCI6MjA4MDk0MDgzMn0.v30XN8V0UvxDMfRp3JWFCPR8aThoh0E4fTR_oHqiXSU";
 
@@ -266,7 +315,155 @@ const PARTICIPANT_URL = new URL('p.html', window.location.href).toString();
 const $ = (id) => document.getElementById(id);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// === LOGIKA LOSOWANIA ===
+// === TŁUMACZENIA / TRANSLATIONS ===
+const T = {
+  pl: {
+    docTitle: `🎄 Secret Santa – Organizator 🎁`,
+    h1: `Secret Santa – Organizator`,
+    subtitle: `Losowanie z wykluczeniami i osobistymi linkami dla uczestników.`,
+    step1: `Krok 1: konfiguracja losowania`,
+    intro1: `Wpisz nazwę losowania, uczestników oraz wykluczenia. Po kliknięciu przycisku wyniki zapisują się w chmurze, a niżej zobaczysz linki dla wszystkich. Wesołych Świąt! 🎁`,
+    slugLabel: `Nazwa losowania`,
+    slugHint: `Tylko dla Ciebie, uczestnicy jej nie zobaczą.`,
+    slugPh: `np. Superaki 2025`,
+    peopleLabel: `Lista osób`,
+    peopleHint: `Po jednej w linii. Imiona muszą się różnić (np. „Ania K.” i „Ania M.”).`,
+    peoplePh: `Wpisz imiona, po jednym w linii`,
+    consLabel: `Wykluczenia (opcjonalnie)`,
+    consHint: `Format: „Imię: osoby, których nie może wylosować” (po przecinku). Np. „Ania: Tomasz, Basia” oznacza, że Ania nie wylosuje Tomasza ani Basi. Wykluczenie działa w jedną stronę, więc drugą dopisz osobną linią.`,
+    consPh: `Ania: Tomasz, Basia\nTomasz: Ania`,
+    budgetLabel: `Budżet na prezenty (opcjonalnie)`,
+    budgetPh: `np. 100 zł`,
+    wishLabel: `Link do listy życzeń (opcjonalnie)`,
+    wishHint: `Musi zaczynać się od https://`,
+    wishPh: `Link do Google Documents, OneDrive itp.`,
+    langLabel: `Język stron uczestników`,
+    langHint: `W tym języku uczestnicy zobaczą swój wynik.`,
+    draw: `Losuj`,
+    drawing: `Losuję…`,
+    step2: `Krok 2: linki dla uczestników`,
+    step2Intro: `Wyślij każdemu <strong>tylko jego link</strong> (SMS, mail, Messenger). Nie otwieraj cudzych linków: kto otworzy link, zobaczy wynik tej osoby.`,
+    callout: `Linki widać tylko teraz. Po zamknięciu lub odświeżeniu strony nie da się ich odzyskać, więc skopiuj je od razu.`,
+    copyAll: `Kopiuj wszystkie linki`,
+    copyAllHint: `„Kopiuj wszystkie” wkleja do schowka listę „imię: link”. Zapisz ją w notatniku, a potem rozsyłaj linki pojedynczo.`,
+    footer: `Stworzone na użytek prywatny przez`,
+    // komunikaty / messages
+    errName: `Podaj nazwę losowania.`,
+    errMin2: `Potrzeba co najmniej 2 osób.`,
+    errDupes: `Na liście są powtórzone imiona. Każda osoba musi mieć unikalne imię.`,
+    errLink: `Link do listy życzeń musi zaczynać się od http:// lub https://`,
+    errNoDraw: `Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.`,
+    saving: `Losowanie zakończone, zapisuję w chmurze…`,
+    errSlugTaken: `Losowanie o takiej nazwie już istnieje. Wybierz inną nazwę.`,
+    errSave: `Błąd przy zapisie losowania.`,
+    done: `Gotowe! Losowanie zakończone. Wyślij linki uczestnikom 🎁`,
+    errUnexpected: `Nieoczekiwany błąd.`,
+    copy: `Kopiuj`,
+    copyFor: `Kopiuj link dla: `,
+    copied: `Skopiowano! 🎁`,
+    copiedAll: `Skopiowano wszystko 🎁`,
+    copyFail: `Nie udało się skopiować`,
+    noLinks: `Brak linków (coś poszło nie tak z losowaniem).`
+  },
+  en: {
+    docTitle: `🎄 Secret Santa – Organizer 🎁`,
+    h1: `Secret Santa – Organizer`,
+    subtitle: `Draw names with exclusions and give every participant a personal link.`,
+    step1: `Step 1: set up the draw`,
+    intro1: `Enter a name for the draw, the participants and any exclusions. When you click the button, the results are saved in the cloud and the links for everyone appear below. Merry Christmas! 🎁`,
+    slugLabel: `Draw name`,
+    slugHint: `Just for you, participants won't see it.`,
+    slugPh: `e.g. Family 2026`,
+    peopleLabel: `List of people`,
+    peopleHint: `One per line. Names must be different (e.g. "Anna K." and "Anna M.").`,
+    peoplePh: `Enter names, one per line`,
+    consLabel: `Exclusions (optional)`,
+    consHint: `Format: "Name: people they can't draw" (comma-separated). E.g. "Anna: Tom, Barbara" means Anna won't draw Tom or Barbara. An exclusion works one way only, so add the reverse as a separate line.`,
+    consPh: `Anna: Tom, Barbara\nTom: Anna`,
+    budgetLabel: `Gift budget (optional)`,
+    budgetPh: `e.g. 25 EUR`,
+    wishLabel: `Wish list link (optional)`,
+    wishHint: `Must start with https://`,
+    wishPh: `Link to Google Docs, OneDrive, etc.`,
+    langLabel: `Language of the participants' pages`,
+    langHint: `Participants will see their result in this language.`,
+    draw: `Draw`,
+    drawing: `Drawing…`,
+    step2: `Step 2: links for participants`,
+    step2Intro: `Send each person <strong>only their own link</strong> (SMS, email, Messenger). Don't open other people's links: whoever opens a link sees that person's result.`,
+    callout: `The links are only shown now. After you close or refresh the page they can't be recovered, so copy them right away.`,
+    copyAll: `Copy all links`,
+    copyAllHint: `"Copy all" puts a "name: link" list on the clipboard. Save it in a notes app, then send the links one by one.`,
+    footer: `Made for private use by`,
+    errName: `Enter a name for the draw.`,
+    errMin2: `You need at least 2 people.`,
+    errDupes: `Some names are repeated. Each person needs a unique name.`,
+    errLink: `The wish list link must start with http:// or https://`,
+    errNoDraw: `Couldn't find a valid draw. Try fewer exclusions.`,
+    saving: `Draw complete, saving to the cloud…`,
+    errSlugTaken: `A draw with this name already exists. Choose a different name.`,
+    errSave: `Error saving the draw.`,
+    done: `Done! The draw is complete. Send the links to the participants 🎁`,
+    errUnexpected: `Unexpected error.`,
+    copy: `Copy`,
+    copyFor: `Copy link for: `,
+    copied: `Copied! 🎁`,
+    copiedAll: `Copied everything 🎁`,
+    copyFail: `Couldn't copy`,
+    noLinks: `No links (something went wrong with the draw).`
+  }
+};
+
+// Domyślnie polski; wybór zapamiętujemy w przeglądarce / Polish by default; the choice is remembered
+let uiLang = 'pl';
+try {
+  const saved = localStorage.getItem('ss_lang');
+  if (saved === 'pl' || saved === 'en') uiLang = saved;
+} catch (e) { /* storage unavailable: stay with Polish */ }
+
+const t = (key) => T[uiLang][key];
+
+// === STAN STRONY / PAGE STATE ===
+let currentLinks = [];
+const copiedNames = new Set();
+let linksNotCopied = false;
+let busy = false;
+let drawLangTouched = false;
+let lastStatus = { key: '', kind: '' };
+
+function renderStatus() {
+  const el = $('status');
+  el.textContent = lastStatus.key ? t(lastStatus.key) : '';
+  el.className = 'status' + (lastStatus.kind ? ' ' + lastStatus.kind : '');
+}
+
+function setStatus(key, kind) {
+  lastStatus = { key: key, kind: kind || '' };
+  renderStatus();
+}
+
+function applyLanguage(lang) {
+  uiLang = lang;
+  document.documentElement.lang = lang;
+  document.title = t('docTitle');
+
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+  });
+
+  // dopóki organizer nie wybrał języka losowania ręcznie, podąża za językiem strony
+  // until the organizer picks the draw language by hand, it follows the page language
+  if (!drawLangTouched) $('drawLang').value = lang;
+  if (busy) $('generateLabel').textContent = t('drawing');
+
+  renderStatus();
+  if (currentLinks.length) renderLinks(currentLinks);
+}
+
+// === LOGIKA LOSOWANIA / DRAW LOGIC ===
 function parsePeople(text) {
   return text.split('\n').map(x => x.trim()).filter(x => x.length > 0);
 }
@@ -302,7 +499,7 @@ function drawSecretSanta(people, constraints, maxTries = 10000) {
     if (!base.includes(p)) base.push(p);
     fullConstraints[p] = base;
   }
-  for (let t = 0; t < maxTries; t++) {
+  for (let attempt = 0; attempt < maxTries; attempt++) {
     const receivers = shuffleFixed(people);
     const assignment = {};
     let ok = true;
@@ -319,18 +516,7 @@ function drawSecretSanta(people, constraints, maxTries = 10000) {
   return null;
 }
 
-// === STAN STRONY ===
-let currentLinks = [];
-const copiedNames = new Set();
-let linksNotCopied = false;
-
-function setStatus(text, kind) {
-  const el = $('status');
-  el.textContent = text;
-  el.className = 'status' + (kind ? ' ' + kind : '');
-}
-
-// === GŁÓWNA FUNKCJA ===
+// === GŁÓWNA FUNKCJA / MAIN FUNCTION ===
 async function generateAndSave() {
   const btn = $('generateBtn');
   const label = $('generateLabel');
@@ -342,40 +528,27 @@ async function generateAndSave() {
   copiedNames.clear();
   linksNotCopied = false;
 
+  busy = true;
   btn.disabled = true;
-  label.textContent = 'Losuję…';
+  label.textContent = t('drawing');
 
   try {
     const drawSlug = $('drawSlug').value.trim();
     const budget = $('budget').value.trim();
     const wishLink = $('wishLink').value.trim();
+    const drawLang = $('drawLang').value === 'en' ? 'en' : 'pl';
     const people = parsePeople($('people').value);
 
-    if (!drawSlug) {
-      setStatus('Podaj nazwę losowania.', 'err');
-      return;
-    }
-    if (people.length < 2) {
-      setStatus('Potrzeba co najmniej 2 osób.', 'err');
-      return;
-    }
-    if (new Set(people).size !== people.length) {
-      setStatus('Na liście są powtórzone imiona. Każda osoba musi mieć unikalne imię.', 'err');
-      return;
-    }
-    if (wishLink && !/^https?:\/\//i.test(wishLink)) {
-      setStatus('Link do listy życzeń musi zaczynać się od http:// lub https://', 'err');
-      return;
-    }
+    if (!drawSlug) { setStatus('errName', 'err'); return; }
+    if (people.length < 2) { setStatus('errMin2', 'err'); return; }
+    if (new Set(people).size !== people.length) { setStatus('errDupes', 'err'); return; }
+    if (wishLink && !/^https?:\/\//i.test(wishLink)) { setStatus('errLink', 'err'); return; }
 
     const constraints = parseConstraints($('constraints').value);
     const assignment = drawSecretSanta(people, constraints);
-    if (!assignment) {
-      setStatus('Nie udało się znaleźć poprawnego losowania. Zmniejsz liczbę wykluczeń.', 'err');
-      return;
-    }
+    if (!assignment) { setStatus('errNoDraw', 'err'); return; }
 
-    setStatus('Losowanie zakończone, zapisuję w chmurze…', '');
+    setStatus('saving', '');
 
     // Wszystko zapisuje jedna funkcja w bazie (create_draw): atomowo, a tokeny
     // generuje serwer. Przeglądarka nie ma bezpośredniego dostępu do tabel.
@@ -391,11 +564,7 @@ async function generateAndSave() {
     if (error) {
       console.error(error);
       const msg = error.message || '';
-      if (msg.includes('slug_taken')) {
-        setStatus('Losowanie o takiej nazwie już istnieje. Wybierz inną nazwę.', 'err');
-      } else {
-        setStatus('Błąd przy zapisie losowania.', 'err');
-      }
+      setStatus(msg.includes('slug_taken') ? 'errSlugTaken' : 'errSave', 'err');
       return;
     }
 
@@ -404,6 +573,7 @@ async function generateAndSave() {
       url.searchParams.set('drawId', row.out_draw_id);
       url.searchParams.set('name', row.out_name);
       url.searchParams.set('token', row.out_token);
+      url.searchParams.set('lang', drawLang); // język strony uczestnika / participant page language
       return { name: row.out_name, url: url.toString() };
     });
     links.sort((a, b) => people.indexOf(a.name) - people.indexOf(b.name));
@@ -411,27 +581,28 @@ async function generateAndSave() {
     currentLinks = links;
     linksNotCopied = links.length > 0;
 
-    setStatus('Gotowe! Losowanie zakończone. Wyślij linki uczestnikom 🎁', 'ok');
+    setStatus('done', 'ok');
     renderLinks(links);
     $('linksBox').hidden = false;
     $('linksBox').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
 
   } catch (e) {
     console.error(e);
-    setStatus('Nieoczekiwany błąd.', 'err');
+    setStatus('errUnexpected', 'err');
   } finally {
+    busy = false;
     btn.disabled = false;
-    label.textContent = 'Losuj';
+    label.textContent = t('draw');
   }
 }
 
-// === LINKI I KOPIOWANIE ===
+// === LINKI I KOPIOWANIE / LINKS AND COPYING ===
 function renderLinks(links) {
   const container = $('linksOutput');
   container.innerHTML = '';
 
   if (!links || links.length === 0) {
-    container.textContent = 'Brak linków (coś poszło nie tak z losowaniem).';
+    container.textContent = t('noLinks');
     return;
   }
 
@@ -449,10 +620,10 @@ function renderLinks(links) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn btn-sm';
-    btn.textContent = 'Kopiuj';
-    btn.setAttribute('aria-label', 'Kopiuj link dla: ' + item.name);
+    btn.textContent = t('copy');
+    btn.setAttribute('aria-label', t('copyFor') + item.name);
     btn.addEventListener('click', async () => {
-      if (await copyToClipboard(item.url, btn, 'Skopiowano! 🎁')) {
+      if (await copyToClipboard(item.url, btn, t('copied'))) {
         markCopied([item.name]);
       }
     });
@@ -491,7 +662,7 @@ async function copyToClipboard(text, btn, doneLabel) {
     return true;
   } catch (e) {
     console.error('Clipboard error', e);
-    btn.textContent = 'Nie udało się skopiować';
+    btn.textContent = t('copyFail');
     setTimeout(() => { btn.textContent = original; }, 2000);
     return false;
   }
@@ -500,12 +671,13 @@ async function copyToClipboard(text, btn, doneLabel) {
 async function copyAllLinks() {
   if (currentLinks.length === 0) return;
   const text = currentLinks.map(l => l.name + ': ' + l.url).join('\n');
-  if (await copyToClipboard(text, $('copyAllBtn'), 'Skopiowano wszystko 🎁')) {
+  if (await copyToClipboard(text, $('copyAllBtn'), t('copiedAll'))) {
     markCopied(currentLinks.map(l => l.name));
   }
 }
 
 // Ostrzeżenie przed zamknięciem strony, dopóki linki nie zostały skopiowane
+// Warn before leaving the page until the links have been copied
 window.addEventListener('beforeunload', (e) => {
   if (linksNotCopied) {
     e.preventDefault();
@@ -513,8 +685,18 @@ window.addEventListener('beforeunload', (e) => {
   }
 });
 
+// === START ===
+document.querySelectorAll('.lang-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    applyLanguage(b.dataset.lang);
+    try { localStorage.setItem('ss_lang', b.dataset.lang); } catch (e) { /* ignore */ }
+  });
+});
+$('drawLang').addEventListener('change', () => { drawLangTouched = true; });
 $('generateBtn').addEventListener('click', generateAndSave);
 $('copyAllBtn').addEventListener('click', copyAllLinks);
+
+applyLanguage(uiLang);
 </script>
 </body>
 </html>

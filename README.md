@@ -5,14 +5,14 @@ A tiny Secret Santa organizer. The organizer enters the participants (with optio
 - Pure static site (two HTML files, no build step)
 - Supabase (Postgres) stores the draws
 - Hosted on GitHub Pages: <https://tgnine1.github.io/secret-santa/>
-- The interface is in Polish
+- Available in Polish and English: the organizer page has a PL | EN switch, and for every draw the organizer chooses the language of the participants' pages (Polish by default)
 
 ## How it works
 
 1. The organizer opens `index.html`, enters the names, exclusions, budget and an optional wish-list link.
 2. The browser draws the pairs (reshuffles until all exclusions are satisfied).
 3. The pairs are sent to the database function `create_draw`, which stores them and generates a random secret token for every person. The organizer gets one link per person.
-4. The organizer sends each person only their own link: `p.html?drawId=…&name=…&token=…`
+4. The organizer sends each person only their own link: `p.html?drawId=…&name=…&token=…&lang=pl` (or `lang=en`, which sets the language the participant sees)
 5. A participant opens the link, taps **Pokaż mój wynik**, and sees who they buy a gift for. The browser calls `get_assignment`, and the server returns that one result only if the token matches.
 
 ## Files
@@ -118,6 +118,10 @@ where draw_id in (select id from public.draws where slug = 'Superaki 2025');
 
 delete from public.draws where slug = 'Superaki 2025';
 ```
+
+## Languages
+
+All visible text lives in a `T = { pl: {…}, en: {…} }` dictionary at the top of each page's script, so adding a language means adding one more block there. The organizer's choice is stored in the participant link as `lang`; links without it (for example from older draws) open in Polish. The database is not involved in translation.
 
 ## Tech notes
 
